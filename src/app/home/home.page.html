@@ -1,20 +1,103 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
+
+<ion-header>
+  <ion-toolbar color="primary">
     <ion-title>
-      Blank
+      Marmara Ulaşım
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+  <section class="hero">
+    <div class="hero-content">
+      <span class="eyebrow">MARMARA BÖLGESİ</span>
+
+      <h1>Yolculuğun<br>buradan başlar.</h1>
+
+      <p style="display: flex; text-decoration-line: overline;">
+        Marmara Bölgesi'ndeki ulaşım seçeneklerini
+        tek bir noktadan keşfedin.
+      </p>
+    </div>
+  </section>
+
+  <div class="main-container">
+
+    <section class="search-card">
+      <h2>Nereye gitmek istiyorsun?</h2>
+
+      <div class="input-group">
+        <label for="from">Nereden?</label>
+        <input
+          id="from"
+          type="text"
+          placeholder="Başlangıç noktası"
+        />
+      </div>
+
+      <div class="input-group">
+        <label for="to">Nereye?</label>
+        <input
+          id="to"
+          type="text"
+          placeholder="Varış noktası"
+        />
+      </div>
+
+      <button class="search-button">
+        Rota Ara
+      </button>
+    </section>
+
+    <section class="transport-section">
+      <h2>Ulaşım seçenekleri</h2>
+
+      <div class="transport-grid">
+        <div class="transport-card">
+          <span class="transport-icon">🚌</span>
+          <h3>Otobüs</h3>
+          <p>Şehir içi ve şehirler arası</p>
+        </div>
+
+        <div class="transport-card">
+          <span class="transport-icon">🚆</span>
+          <h3>Tren</h3>
+          <p>Raylı sistemler</p>
+        </div>
+
+        <div class="transport-card">
+          <span class="transport-icon">⛴️</span>
+          <h3>Feribot</h3>
+          <p>Deniz ulaşımı</p>
+        </div>
+
+        <div class="transport-card">
+          <span class="transport-icon">🚇</span>
+          <h3>Metro</h3>
+          <p>Hızlı şehir ulaşımı</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cities-section">
+      <h2>Marmara'nın 11 şehri</h2>
+
+      <div class="city-list">
+        <span>İstanbul</span>
+        <span>Kocaeli</span>
+        <span>Sakarya</span>
+        <span>Bursa</span>
+        <span>Balıkesir</span>
+        <span>Çanakkale</span>
+        <span>Tekirdağ</span>
+        <span>Edirne</span>
+        <span>Kırklareli</span>
+        <span>Yalova</span>
+        <span>Bilecik</span>
+      </div>
+    </section>
+
   </div>
+
 </ion-content>
