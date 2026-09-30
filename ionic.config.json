@@ -1,0 +1,7 @@
+{
+  "name": "MarmaraUlasim",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
