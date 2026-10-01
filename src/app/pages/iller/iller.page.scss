@@ -1,0 +1,168 @@
+
+.iller-content {
+  --background: #f5f7fb;
+}
+
+.page-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+}
+
+.welcome-section {
+  text-align: center;
+  padding: 24px 10px 20px;
+}
+
+.welcome-icon {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 16px;
+  border-radius: 24px;
+  background: #e7efff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome-icon ion-icon {
+  font-size: 38px;
+  color: #2563eb;
+}
+
+.welcome-section h1 {
+  margin: 0;
+  font-size: 27px;
+  font-weight: 800;
+  color: #17233c;
+}
+
+.welcome-section p {
+  margin: 10px 0 0;
+  color: #718096;
+  font-size: 14px;
+}
+
+.search-section {
+  margin: 10px 0 28px;
+}
+
+ion-searchbar {
+  --background: #ffffff;
+  --border-radius: 16px;
+  --box-shadow: 0 4px 18px rgba(20, 40, 80, 0.06);
+  --placeholder-color: #9aa5b5;
+  --color: #17233c;
+  padding: 0;
+}
+
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 750;
+  color: #17233c;
+}
+
+.section-heading p {
+  margin: 5px 0 0;
+  color: #8994a5;
+  font-size: 13px;
+}
+
+.section-heading ion-badge {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.city-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.city-card {
+  margin: 0;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(20, 40, 80, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.city-card:active {
+  transform: scale(0.97);
+}
+
+.city-card ion-card-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 12px;
+}
+
+.city-icon {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: #edf3ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.city-icon ion-icon {
+  color: #2563eb;
+  font-size: 23px;
+}
+
+.city-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.city-info h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #24324a;
+}
+
+.city-info p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  color: #8994a5;
+}
+
+.arrow-icon {
+  color: #a0aec0;
+  font-size: 17px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 50px 20px;
+  color: #8994a5;
+}
+
+.empty-state ion-icon {
+  font-size: 45px;
+}
+
+.empty-state h3 {
+  color: #24324a;
+  margin-bottom: 8px;
+}
+
+@media (min-width: 600px) {
+  .city-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

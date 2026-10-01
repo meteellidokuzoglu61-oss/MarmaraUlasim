@@ -1,13 +1,83 @@
+
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>iller</ion-title>
+    <ion-title>Marmara Ulaşım</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">iller</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="iller-content">
+
+  <div class="page-container">
+
+    <div class="welcome-section">
+      <div class="welcome-icon">
+        <ion-icon name="map-outline"></ion-icon>
+      </div>
+
+      <h1>Marmara Bölgesi</h1>
+
+      <p>
+        Şehrini seç, ulaşım seçeneklerini keşfet.
+      </p>
+    </div>
+
+    <div class="search-section">
+      <ion-searchbar
+        placeholder="İl ara..."
+        [(ngModel)]="searchText"
+        (ionInput)="searchCities()"
+        animated="true"
+        debounce="300">
+      </ion-searchbar>
+    </div>
+
+    <div class="section-heading">
+      <div>
+        <h2>İller</h2>
+        <p>Bölgedeki şehirleri keşfet</p>
+      </div>
+
+      <ion-badge color="primary">
+        {{ filteredCities.length }} il
+      </ion-badge>
+    </div>
+
+    <div class="city-grid">
+
+      <ion-card
+        class="city-card"
+        button="true"
+        *ngFor="let city of filteredCities"
+        (click)="openCity(city.id)">
+
+        <ion-card-content>
+
+          <div class="city-icon">
+            <ion-icon name="business-outline"></ion-icon>
+          </div>
+
+          <div class="city-info">
+            <h3>{{ city.name }}</h3>
+            <p>{{ city.districtCount }} ilçe</p>
+          </div>
+
+          <ion-icon
+            name="chevron-forward-outline"
+            class="arrow-icon">
+          </ion-icon>
+
+        </ion-card-content>
+
+      </ion-card>
+
+    </div>
+
+    <div class="empty-state" *ngIf="filteredCities.length === 0">
+      <ion-icon name="search-outline"></ion-icon>
+      <h3>İl bulunamadı</h3>
+      <p>Aradığın il için farklı bir kelime deneyebilirsin.</p>
+    </div>
+
+  </div>
+
 </ion-content>
