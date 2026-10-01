@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "5NTaBEQa1ks=",
+  "dgSpecHash": "/1sFjuhIHPQ=",
   "success": true,
   "projectFilePath": "C:\\Users\\hatic\\Desktop\\Web Projeleri\\MarmaraUlasim\\MarmaraUlasim.API\\MarmaraUlasim.API.csproj",
   "expectedPackageFiles": [
@@ -37,7 +37,7 @@
     {
       "code": "NU1903",
       "level": "Warning",
-      "message": "'Microsoft.OpenApi' 2.0.0 paketinde önem derecesi yüksek olan bilinen bir https://github.com/advisories/GHSA-v5pm-xwqc-g5wc güvenlik açığı var",
+      "message": "Package 'Microsoft.OpenApi' 2.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-v5pm-xwqc-g5wc",
       "projectPath": "C:\\Users\\hatic\\Desktop\\Web Projeleri\\MarmaraUlasim\\MarmaraUlasim.API\\MarmaraUlasim.API.csproj",
       "warningLevel": 1,
       "filePath": "C:\\Users\\hatic\\Desktop\\Web Projeleri\\MarmaraUlasim\\MarmaraUlasim.API\\MarmaraUlasim.API.csproj",
