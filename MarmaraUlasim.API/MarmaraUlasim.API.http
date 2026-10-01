@@ -1,0 +1,6 @@
+@MarmaraUlasim.API_HostAddress = http://localhost:5197
+
+GET {{MarmaraUlasim.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
