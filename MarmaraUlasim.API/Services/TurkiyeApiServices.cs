@@ -21,72 +21,31 @@ public class TurkiyeApiService
         _context = context;
     }
 
-    public async Task<int> IlceleriAktarAsync()
+   public async Task<int> IlceleriAktarAsync()
+{
+    var response =
+        await _httpClient.GetFromJsonAsync<TurkiyeApiResponse>(ApiUrl);
+
+    if (response == null || response.Data == null)
     {
-        // TurkiyeAPI'den bütün ilçeleri çek
-        var response =
-            await _httpClient.GetFromJsonAsync<TurkiyeApiResponse>(ApiUrl);
-
-        if (response == null || response.Data == null)
-        {
-            throw new Exception(
-                "TurkiyeAPI'den ilçe verileri alınamadı.");
-        }
-
-        // PostgreSQL'deki 11 Marmara ilini getir
-        var iller = await _context.Iller
-            .AsNoTracking()
-            .ToListAsync();
-
-        // İl adına göre eşleştirme
-        var ilByName = iller.ToDictionary(
-            x => Normalize(x.Ad),
-            x => x
-        );
-
-        // Daha önce aktarılmış ilçeleri kontrol et
-        var mevcutApiIdler = await _context.Ilceler
-            .Select(x => x.ApiId)
-            .ToHashSetAsync();
-
-        var yeniIlceler = new List<Ilce>();
-
-        foreach (var dto in response.Data)
-        {
-            // TurkiyeAPI'deki il adını normalize et
-            var ilAdi = Normalize(dto.Province);
-
-            // Sadece bizim Marmara illerimizi kabul et
-            if (!ilByName.TryGetValue(ilAdi, out var il))
-            {
-                continue;
-            }
-
-            // Daha önce aktarılmışsa tekrar ekleme
-            if (mevcutApiIdler.Contains(dto.Id))
-            {
-                continue;
-            }
-
-            yeniIlceler.Add(new Ilce
-            {
-                ApiId = dto.Id,
-                Ad = dto.Name,
-                IlId = il.Id
-            });
-
-            mevcutApiIdler.Add(dto.Id);
-        }
-
-        // PostgreSQL'e kaydet
-        if (yeniIlceler.Count > 0)
-        {
-            await _context.Ilceler.AddRangeAsync(yeniIlceler);
-            await _context.SaveChangesAsync();
-        }
-
-        return yeniIlceler.Count;
+        throw new Exception("TurkiyeAPI'den veri alınamadı.");
     }
+
+    var ilkKayitlar = response.Data
+        .Take(10)
+        .Select(x => new
+        {
+            x.ProvinceId,
+            x.Province,
+            x.Id,
+            x.Name
+        })
+        .ToList();
+
+    throw new Exception(
+        System.Text.Json.JsonSerializer.Serialize(ilkKayitlar)
+    );
+}
 
     // Türkçe karakter ve büyük/küçük harf farklarını azaltır
     private static string Normalize(string value)
