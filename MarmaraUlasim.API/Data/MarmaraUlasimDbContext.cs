@@ -12,10 +12,17 @@ public class MarmaraUlasimDbContext : DbContext
     }
 
     public DbSet<Il> Iller => Set<Il>();
+    public DbSet<Ilce> Ilceler => Set<Ilce>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Il>()
+            .HasMany<Ilce>()
+            .WithOne(x => x.Il)
+            .HasForeignKey(x => x.IlId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Il>().HasData(
             new Il { Id = 1, Ad = "İstanbul", PlakaKodu = 34 },
