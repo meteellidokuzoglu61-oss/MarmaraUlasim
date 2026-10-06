@@ -391,6 +391,60 @@ public async Task<IActionResult> ImportKocaeliSeferShapeId(
     }
 }
 
+[HttpGet("sefer/{seferKodu}/guzergah")]
+public async Task<IActionResult> GetSeferGuzergahi(
+    string seferKodu)
+{
+    var sefer = await _context.Seferler
+        .AsNoTracking()
+        .FirstOrDefaultAsync(x =>
+            x.SeferKodu == seferKodu &&
+            x.Kaynak == "KentKart-Kocaeli");
+
+    if (sefer == null)
+    {
+        return NotFound(new
+        {
+            message = "Sefer bulunamadı."
+        });
+    }
+
+    if (string.IsNullOrWhiteSpace(sefer.ShapeId))
+    {
+        return NotFound(new
+        {
+            message =
+                "Bu sefer için güzergâh bilgisi bulunamadı."
+        });
+    }
+
+    var noktalar =
+        await _context.GuzergahNoktalari
+            .AsNoTracking()
+            .Where(x =>
+                x.ShapeId == sefer.ShapeId &&
+                x.Kaynak == "KentKart-Kocaeli" &&
+                x.Aktif)
+            .OrderBy(x => x.Sira)
+            .Select(x => new
+            {
+                x.Sira,
+                enlem = x.Enlem,
+                boylam = x.Boylam,
+                mesafe = x.Mesafe
+            })
+            .ToListAsync();
+
+    return Ok(new
+    {
+        seferKodu = sefer.SeferKodu,
+        hatKodu = sefer.HatKodu,
+        shapeId = sefer.ShapeId,
+        noktaSayisi = noktalar.Count,
+        noktalar
+    });
+}
+
 [HttpPost("import/kocaeli/sefer-duraklari")]
 public async Task<IActionResult> ImportKocaeliSeferDuraklari(
     [FromQuery] string gtfsKlasoru)
