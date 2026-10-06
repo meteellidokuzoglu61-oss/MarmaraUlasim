@@ -18,6 +18,7 @@ public class MarmaraUlasimDbContext : DbContext
     public DbSet<Mahalle> Mahalleler => Set<Mahalle>();
 
     public DbSet<Durak> Duraklar => Set<Durak>();
+    public DbSet<Hat> Hatlar => Set<Hat>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

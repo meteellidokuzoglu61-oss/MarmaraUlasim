@@ -216,6 +216,55 @@ public class DuraklarController : ControllerBase
         }
     }
 
+    [HttpPost("import/kocaeli/hatlar")]
+public async Task<IActionResult> ImportKocaeliHatlar(
+    [FromQuery] string gtfsKlasoru)
+{
+    try
+    {
+        if (string.IsNullOrWhiteSpace(gtfsKlasoru))
+        {
+            return BadRequest(new
+            {
+                message = "GTFS klasör yolu belirtilmelidir."
+            });
+        }
+
+        var eklenen =
+            await _kocaeliGtfsService
+                .HatlariAktarAsync(gtfsKlasoru);
+
+        return Ok(new
+        {
+            message = "Kocaeli hat aktarımı tamamlandı.",
+            eklenenHatSayisi = eklenen
+        });
+    }
+    catch (DirectoryNotFoundException ex)
+    {
+        return NotFound(new
+        {
+            message = ex.Message
+        });
+    }
+    catch (FileNotFoundException ex)
+    {
+        return NotFound(new
+        {
+            message = ex.Message,
+            dosya = ex.FileName
+        });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new
+        {
+            message = "Kocaeli hat aktarımı sırasında hata oluştu.",
+            detay = ex.Message
+        });
+    }
+}
+
     // ============================================================
     // DURAK SAYISI
     // ============================================================

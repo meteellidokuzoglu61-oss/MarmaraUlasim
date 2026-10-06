@@ -171,6 +171,142 @@ public class KocaeliGtfsService
         return yeniDuraklar.Count;
     }
 
+    public async Task<int> HatlariAktarAsync(string gtfsKlasoru)
+{
+    if (!Directory.Exists(gtfsKlasoru))
+    {
+        throw new DirectoryNotFoundException(
+            $"GTFS klasörü bulunamadı: {gtfsKlasoru}");
+    }
+
+    var routesFile = Path.Combine(
+        gtfsKlasoru,
+        "routes.txt");
+
+    if (!File.Exists(routesFile))
+    {
+        throw new FileNotFoundException(
+            "GTFS içerisinde routes.txt bulunamadı.",
+            routesFile);
+    }
+
+    var mevcutKodlar = await _context.Hatlar
+        .Where(x => x.Kaynak == "KentKart-Kocaeli")
+        .Select(x => x.HatKodu)
+        .ToHashSetAsync();
+
+    var yeniHatlar = new List<Hat>();
+
+    var satirlar = await File.ReadAllLinesAsync(routesFile);
+
+    if (satirlar.Length <= 1)
+    {
+        return 0;
+    }
+
+    var basliklar = ParseCsvLine(satirlar[0]);
+
+    int routeIdIndex =
+        basliklar.IndexOf("route_id");
+
+    int routeShortNameIndex =
+        basliklar.IndexOf("route_short_name");
+
+    int routeLongNameIndex =
+        basliklar.IndexOf("route_long_name");
+
+    int routeTypeIndex =
+        basliklar.IndexOf("route_type");
+
+    if (routeIdIndex < 0)
+    {
+        throw new Exception(
+            "routes.txt içerisinde route_id bulunamadı.");
+    }
+
+    foreach (var satir in satirlar.Skip(1))
+    {
+        if (string.IsNullOrWhiteSpace(satir))
+        {
+            continue;
+        }
+
+        var alanlar = ParseCsvLine(satir);
+
+        if (alanlar.Count <= routeIdIndex)
+        {
+            continue;
+        }
+
+        var hatKodu =
+            alanlar[routeIdIndex].Trim();
+
+        if (string.IsNullOrWhiteSpace(hatKodu))
+        {
+            continue;
+        }
+
+        if (mevcutKodlar.Contains(hatKodu))
+        {
+            continue;
+        }
+
+        string ad = "";
+
+        if (routeShortNameIndex >= 0 &&
+            alanlar.Count > routeShortNameIndex)
+        {
+            ad = alanlar[routeShortNameIndex].Trim();
+        }
+
+        if (string.IsNullOrWhiteSpace(ad) &&
+            routeLongNameIndex >= 0 &&
+            alanlar.Count > routeLongNameIndex)
+        {
+            ad = alanlar[routeLongNameIndex].Trim();
+        }
+
+        string? aciklama = null;
+
+        if (routeLongNameIndex >= 0 &&
+            alanlar.Count > routeLongNameIndex)
+        {
+            aciklama =
+                alanlar[routeLongNameIndex].Trim();
+        }
+
+        string? tip = null;
+
+        if (routeTypeIndex >= 0 &&
+            alanlar.Count > routeTypeIndex)
+        {
+            tip = alanlar[routeTypeIndex].Trim();
+        }
+
+        yeniHatlar.Add(new Hat
+        {
+            HatKodu = hatKodu,
+            Ad = ad,
+            Tip = tip,
+            Aciklama = aciklama,
+            Kaynak = "KentKart-Kocaeli",
+            Aktif = true
+        });
+
+        mevcutKodlar.Add(hatKodu);
+    }
+
+    if (yeniHatlar.Count > 0)
+    {
+        await _context.Hatlar.AddRangeAsync(
+            yeniHatlar);
+
+        await _context.SaveChangesAsync();
+    }
+
+    return yeniHatlar.Count;
+}
+
     private static List<string> ParseCsvLine(
         string line)
     {
