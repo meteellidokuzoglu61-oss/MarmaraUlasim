@@ -98,6 +98,42 @@ public async Task<IActionResult> GetAll(
     });
 }
 
+
+[HttpGet("seferler")]
+public async Task<IActionResult> GetSeferler(
+    int sayfa = 1,
+    int sayfaBoyutu = 20)
+{
+    if (sayfa < 1)
+        sayfa = 1;
+
+    if (sayfaBoyutu < 1)
+        sayfaBoyutu = 20;
+
+    if (sayfaBoyutu > 100)
+        sayfaBoyutu = 100;
+
+    var seferler = await _context.Seferler
+        .AsNoTracking()
+        .Where(x => x.Kaynak == "KentKart-Kocaeli")
+        .OrderBy(x => x.SeferKodu)
+        .Skip((sayfa - 1) * sayfaBoyutu)
+        .Take(sayfaBoyutu)
+        .Select(x => new
+        {
+            x.Id,
+            x.SeferKodu,
+            x.HatKodu,
+            x.ServisKodu,
+            x.VarisYonu,
+            x.ShapeId,
+            x.Kaynak,
+            x.Aktif
+        })
+        .ToListAsync();
+
+    return Ok(seferler);
+}
     // ============================================================
     // ID İLE DURAK
     // ============================================================
