@@ -25,47 +25,78 @@ public class DuraklarController : ControllerBase
     // ============================================================
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    [HttpGet]
+public async Task<IActionResult> GetAll(
+    int sayfa = 1,
+    int sayfaBoyutu = 100)
+{
+    if (sayfa < 1)
     {
-        var duraklar = await _context.Duraklar
-            .AsNoTracking()
-            .OrderBy(x => x.Ilce != null ? x.Ilce.Ad : "")
-            .ThenBy(x => x.Ad)
-            .Select(x => new
-            {
-                x.Id,
-                x.DurakKodu,
-                x.Ad,
-                x.Kaynak,
-                x.Enlem,
-                x.Boylam,
-                x.Aktif,
-
-                IlceId = x.IlceId,
-
-                Ilce = x.Ilce != null
-                    ? x.Ilce.Ad
-                    : null,
-
-                MahalleId = x.MahalleId,
-
-                Mahalle = x.Mahalle != null
-                    ? x.Mahalle.Ad
-                    : null,
-
-                Il = x.Ilce != null && x.Ilce.Il != null
-                    ? x.Ilce.Il.Ad
-                    : null,
-
-                PlakaKodu =
-                    x.Ilce != null && x.Ilce.Il != null
-                        ? (int?)x.Ilce.Il.PlakaKodu
-                        : null
-            })
-            .ToListAsync();
-
-        return Ok(duraklar);
+        sayfa = 1;
     }
+
+    if (sayfaBoyutu < 1)
+    {
+        sayfaBoyutu = 100;
+    }
+
+    if (sayfaBoyutu > 500)
+    {
+        sayfaBoyutu = 500;
+    }
+
+    var toplamSayi =
+        await _context.Duraklar.CountAsync();
+
+    var duraklar = await _context.Duraklar
+        .AsNoTracking()
+        .OrderBy(x => x.Ilce != null ? x.Ilce.Ad : "")
+        .ThenBy(x => x.Ad)
+        .Skip((sayfa - 1) * sayfaBoyutu)
+        .Take(sayfaBoyutu)
+        .Select(x => new
+        {
+            x.Id,
+            x.DurakKodu,
+            x.Ad,
+            x.Kaynak,
+            x.Enlem,
+            x.Boylam,
+            x.Aktif,
+
+            IlceId = x.IlceId,
+
+            Ilce = x.Ilce != null
+                ? x.Ilce.Ad
+                : null,
+
+            MahalleId = x.MahalleId,
+
+            Mahalle = x.Mahalle != null
+                ? x.Mahalle.Ad
+                : null,
+
+            Il = x.Ilce != null && x.Ilce.Il != null
+                ? x.Ilce.Il.Ad
+                : null,
+
+            PlakaKodu =
+                x.Ilce != null && x.Ilce.Il != null
+                    ? (int?)x.Ilce.Il.PlakaKodu
+                    : null
+        })
+        .ToListAsync();
+
+    return Ok(new
+    {
+        sayfa,
+        sayfaBoyutu,
+        toplamSayi,
+        toplamSayfa = (int)Math.Ceiling(
+            toplamSayi / (double)sayfaBoyutu),
+        veri = duraklar
+    });
+}
 
     // ============================================================
     // ID İLE DURAK
