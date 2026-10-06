@@ -504,39 +504,32 @@ public async Task<int> SeferDuraklariniAktarAsync(
             stopTimesFile);
     }
 
-    // Veritabanındaki Kocaeli seferleri
     var seferKodlari = await _context.Seferler
         .Where(x => x.Kaynak == "KentKart-Kocaeli")
         .Select(x => x.SeferKodu)
         .ToHashSetAsync();
 
-    // Veritabanındaki Kocaeli durakları
     var durakKodlari = await _context.Duraklar
         .Where(x => x.Kaynak == "KentKart-Kocaeli")
         .Select(x => x.DurakKodu)
         .ToHashSetAsync();
 
-    // Daha önce aktarılmış kayıtlar
     var mevcutKayitlar = await _context.SeferDuraklar
         .Select(x => $"{x.SeferKodu}|{x.DurakSirasi}")
         .ToHashSetAsync();
 
     int eklenen = 0;
 
-    using var reader =
-        new StreamReader(stopTimesFile);
+    using var reader = new StreamReader(stopTimesFile);
 
-    // İlk satır: başlık
-    var baslik =
-        await reader.ReadLineAsync();
+    var baslik = await reader.ReadLineAsync();
 
     if (string.IsNullOrWhiteSpace(baslik))
     {
         return 0;
     }
 
-    var basliklar =
-        ParseCsvLine(baslik);
+    var basliklar = ParseCsvLine(baslik);
 
     int tripIdIndex =
         basliklar.IndexOf("trip_id");
@@ -561,10 +554,9 @@ public async Task<int> SeferDuraklariniAktarAsync(
             "stop_times.txt içerisinde gerekli GTFS alanları bulunamadı.");
     }
 
-    var batch =
-        new List<SeferDurak>();
+    var batch = new List<SeferDurak>();
 
-    const int batchSize = 5000;
+    const int batchSize = 1000;
 
     string? satir;
 
@@ -575,8 +567,7 @@ public async Task<int> SeferDuraklariniAktarAsync(
             continue;
         }
 
-        var alanlar =
-            ParseCsvLine(satir);
+        var alanlar = ParseCsvLine(satir);
 
         int maksimumIndex = Math.Max(
             Math.Max(tripIdIndex, stopIdIndex),
@@ -600,7 +591,6 @@ public async Task<int> SeferDuraklariniAktarAsync(
             continue;
         }
 
-        // İlgili sefer ve durak veritabanında yoksa atla
         if (!seferKodlari.Contains(seferKodu) ||
             !durakKodlari.Contains(durakKodu))
         {
@@ -621,17 +611,15 @@ public async Task<int> SeferDuraklariniAktarAsync(
         if (arrivalTimeIndex >= 0 &&
             alanlar.Count > arrivalTimeIndex)
         {
-            varisSaati =
-                ParseGtfsTime(
-                    alanlar[arrivalTimeIndex]);
+            varisSaati = ParseGtfsTime(
+                alanlar[arrivalTimeIndex].Trim());
         }
 
         if (departureTimeIndex >= 0 &&
             alanlar.Count > departureTimeIndex)
         {
-            kalkisSaati =
-                ParseGtfsTime(
-                    alanlar[departureTimeIndex]);
+            kalkisSaati = ParseGtfsTime(
+                alanlar[departureTimeIndex].Trim());
         }
 
         batch.Add(new SeferDurak
@@ -646,7 +634,6 @@ public async Task<int> SeferDuraklariniAktarAsync(
 
         mevcutKayitlar.Add(anahtar);
 
-        // 5000 kayıtlık parçalar halinde kaydet
         if (batch.Count >= batchSize)
         {
             await _context.SeferDuraklar
@@ -657,10 +644,11 @@ public async Task<int> SeferDuraklariniAktarAsync(
             eklenen += batch.Count;
 
             batch.Clear();
+
+            _context.ChangeTracker.Clear();
         }
     }
 
-    // Son kalan kayıtlar
     if (batch.Count > 0)
     {
         await _context.SeferDuraklar
@@ -669,10 +657,16 @@ public async Task<int> SeferDuraklariniAktarAsync(
         await _context.SaveChangesAsync();
 
         eklenen += batch.Count;
+
+        batch.Clear();
+
+        _context.ChangeTracker.Clear();
     }
 
     return eklenen;
 }
+
+
 
 
     private static List<string> ParseCsvLine(
