@@ -20,6 +20,7 @@ public class MarmaraUlasimDbContext : DbContext
     public DbSet<Durak> Duraklar => Set<Durak>();
     public DbSet<Hat> Hatlar => Set<Hat>();
     public DbSet<Sefer> Seferler => Set<Sefer>();
+    public DbSet<SeferDurak> SeferDuraklar => Set<SeferDurak>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -100,6 +101,28 @@ modelBuilder.Entity<Sefer>()
     {
         x.Kaynak,
         x.SeferKodu
+    })
+    .IsUnique();
+
+    modelBuilder.Entity<SeferDurak>()
+    .HasOne(x => x.Sefer)
+    .WithMany()
+    .HasForeignKey(x => x.SeferKodu)
+    .HasPrincipalKey(x => x.SeferKodu)
+    .OnDelete(DeleteBehavior.Cascade);
+
+modelBuilder.Entity<SeferDurak>()
+    .HasOne(x => x.Durak)
+    .WithMany()
+    .HasForeignKey(x => x.DurakKodu)
+    .HasPrincipalKey(x => x.DurakKodu)
+    .OnDelete(DeleteBehavior.Cascade);
+
+modelBuilder.Entity<SeferDurak>()
+    .HasIndex(x => new
+    {
+        x.SeferKodu,
+        x.DurakSirasi
     })
     .IsUnique();
 

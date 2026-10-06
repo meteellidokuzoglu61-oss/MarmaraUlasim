@@ -452,6 +452,229 @@ public async Task<int> SeferleriAktarAsync(
     return yeniSeferler.Count;
 }
 
+private static TimeSpan? ParseGtfsTime(
+    string value)
+{
+    value = value.Trim();
+
+    if (string.IsNullOrWhiteSpace(value))
+    {
+        return null;
+    }
+
+    var parcalar = value.Split(':');
+
+    if (parcalar.Length != 3)
+    {
+        return null;
+    }
+
+    if (!int.TryParse(parcalar[0], out var saat) ||
+        !int.TryParse(parcalar[1], out var dakika) ||
+        !int.TryParse(parcalar[2], out var saniye))
+    {
+        return null;
+    }
+
+    // GTFS'te 24:00:00 veya daha ileri saatler
+    // kullanılabilir. TimeSpan bunu destekler.
+    return new TimeSpan(
+        saat,
+        dakika,
+        saniye);
+}
+
+public async Task<int> SeferDuraklariniAktarAsync(
+    string gtfsKlasoru)
+{
+    if (!Directory.Exists(gtfsKlasoru))
+    {
+        throw new DirectoryNotFoundException(
+            $"GTFS klasörü bulunamadı: {gtfsKlasoru}");
+    }
+
+    var stopTimesFile = Path.Combine(
+        gtfsKlasoru,
+        "stop_times.txt");
+
+    if (!File.Exists(stopTimesFile))
+    {
+        throw new FileNotFoundException(
+            "GTFS içerisinde stop_times.txt bulunamadı.",
+            stopTimesFile);
+    }
+
+    // Veritabanındaki Kocaeli seferleri
+    var seferKodlari = await _context.Seferler
+        .Where(x => x.Kaynak == "KentKart-Kocaeli")
+        .Select(x => x.SeferKodu)
+        .ToHashSetAsync();
+
+    // Veritabanındaki Kocaeli durakları
+    var durakKodlari = await _context.Duraklar
+        .Where(x => x.Kaynak == "KentKart-Kocaeli")
+        .Select(x => x.DurakKodu)
+        .ToHashSetAsync();
+
+    // Daha önce aktarılmış kayıtlar
+    var mevcutKayitlar = await _context.SeferDuraklar
+        .Select(x => $"{x.SeferKodu}|{x.DurakSirasi}")
+        .ToHashSetAsync();
+
+    int eklenen = 0;
+
+    using var reader =
+        new StreamReader(stopTimesFile);
+
+    // İlk satır: başlık
+    var baslik =
+        await reader.ReadLineAsync();
+
+    if (string.IsNullOrWhiteSpace(baslik))
+    {
+        return 0;
+    }
+
+    var basliklar =
+        ParseCsvLine(baslik);
+
+    int tripIdIndex =
+        basliklar.IndexOf("trip_id");
+
+    int arrivalTimeIndex =
+        basliklar.IndexOf("arrival_time");
+
+    int departureTimeIndex =
+        basliklar.IndexOf("departure_time");
+
+    int stopIdIndex =
+        basliklar.IndexOf("stop_id");
+
+    int stopSequenceIndex =
+        basliklar.IndexOf("stop_sequence");
+
+    if (tripIdIndex < 0 ||
+        stopIdIndex < 0 ||
+        stopSequenceIndex < 0)
+    {
+        throw new Exception(
+            "stop_times.txt içerisinde gerekli GTFS alanları bulunamadı.");
+    }
+
+    var batch =
+        new List<SeferDurak>();
+
+    const int batchSize = 5000;
+
+    string? satir;
+
+    while ((satir = await reader.ReadLineAsync()) != null)
+    {
+        if (string.IsNullOrWhiteSpace(satir))
+        {
+            continue;
+        }
+
+        var alanlar =
+            ParseCsvLine(satir);
+
+        int maksimumIndex = Math.Max(
+            Math.Max(tripIdIndex, stopIdIndex),
+            stopSequenceIndex);
+
+        if (alanlar.Count <= maksimumIndex)
+        {
+            continue;
+        }
+
+        var seferKodu =
+            alanlar[tripIdIndex].Trim();
+
+        var durakKodu =
+            alanlar[stopIdIndex].Trim();
+
+        if (!int.TryParse(
+                alanlar[stopSequenceIndex].Trim(),
+                out var durakSirasi))
+        {
+            continue;
+        }
+
+        // İlgili sefer ve durak veritabanında yoksa atla
+        if (!seferKodlari.Contains(seferKodu) ||
+            !durakKodlari.Contains(durakKodu))
+        {
+            continue;
+        }
+
+        var anahtar =
+            $"{seferKodu}|{durakSirasi}";
+
+        if (mevcutKayitlar.Contains(anahtar))
+        {
+            continue;
+        }
+
+        TimeSpan? varisSaati = null;
+        TimeSpan? kalkisSaati = null;
+
+        if (arrivalTimeIndex >= 0 &&
+            alanlar.Count > arrivalTimeIndex)
+        {
+            varisSaati =
+                ParseGtfsTime(
+                    alanlar[arrivalTimeIndex]);
+        }
+
+        if (departureTimeIndex >= 0 &&
+            alanlar.Count > departureTimeIndex)
+        {
+            kalkisSaati =
+                ParseGtfsTime(
+                    alanlar[departureTimeIndex]);
+        }
+
+        batch.Add(new SeferDurak
+        {
+            SeferKodu = seferKodu,
+            DurakKodu = durakKodu,
+            DurakSirasi = durakSirasi,
+            VarisSaati = varisSaati,
+            KalkisSaati = kalkisSaati,
+            Aktif = true
+        });
+
+        mevcutKayitlar.Add(anahtar);
+
+        // 5000 kayıtlık parçalar halinde kaydet
+        if (batch.Count >= batchSize)
+        {
+            await _context.SeferDuraklar
+                .AddRangeAsync(batch);
+
+            await _context.SaveChangesAsync();
+
+            eklenen += batch.Count;
+
+            batch.Clear();
+        }
+    }
+
+    // Son kalan kayıtlar
+    if (batch.Count > 0)
+    {
+        await _context.SeferDuraklar
+            .AddRangeAsync(batch);
+
+        await _context.SaveChangesAsync();
+
+        eklenen += batch.Count;
+    }
+
+    return eklenen;
+}
+
+
     private static List<string> ParseCsvLine(
         string line)
     {
