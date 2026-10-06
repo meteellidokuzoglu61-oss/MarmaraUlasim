@@ -21,9 +21,12 @@ public class TurkiyeApiService
         _context = context;
     }
 
+    // ============================================================
+    // İLÇELERİ AKTAR
+    // ============================================================
+
     public async Task<int> IlceleriAktarAsync()
     {
-        // TurkiyeAPI'den bütün ilçeleri çek
         var response =
             await _httpClient.GetFromJsonAsync<TurkiyeApiResponse>(ApiUrl);
 
@@ -33,7 +36,6 @@ public class TurkiyeApiService
                 "TurkiyeAPI'den ilçe verileri alınamadı.");
         }
 
-        // Marmara Bölgesi illerinin plaka kodları
         var marmaraPlakalari = new HashSet<int>
         {
             10, // Balıkesir
@@ -49,34 +51,28 @@ public class TurkiyeApiService
             77  // Yalova
         };
 
-        // PostgreSQL'deki illeri getir
         var iller = await _context.Iller
             .AsNoTracking()
             .ToListAsync();
 
-        // Plaka koduna göre il bul
         var ilByPlate = iller.ToDictionary(
             x => x.PlakaKodu,
             x => x
         );
 
-        // Daha önce aktarılmış ilçe API ID'lerini getir
         var mevcutApiIdler = await _context.Ilceler
             .Select(x => x.ApiId)
             .ToHashSetAsync();
 
         var yeniIlceler = new List<Ilce>();
 
-        // TurkiyeAPI'den gelen ilçeleri dolaş
         foreach (var dto in response.Data)
         {
-            // Marmara dışındaki illeri atla
             if (!marmaraPlakalari.Contains(dto.ProvinceId))
             {
                 continue;
             }
 
-            // PostgreSQL'de bu ilin karşılığı var mı?
             if (!ilByPlate.TryGetValue(
                     dto.ProvinceId,
                     out var il))
@@ -84,13 +80,11 @@ public class TurkiyeApiService
                 continue;
             }
 
-            // İlçe zaten varsa tekrar ekleme
             if (mevcutApiIdler.Contains(dto.Id))
             {
                 continue;
             }
 
-            // Yeni ilçe oluştur
             yeniIlceler.Add(new Ilce
             {
                 ApiId = dto.Id,
@@ -98,25 +92,124 @@ public class TurkiyeApiService
                 IlId = il.Id
             });
 
-            // Aynı çalıştırmada tekrar eklenmesini önle
             mevcutApiIdler.Add(dto.Id);
         }
 
-        // Yeni ilçeleri PostgreSQL'e kaydet
         if (yeniIlceler.Count > 0)
         {
             await _context.Ilceler.AddRangeAsync(yeniIlceler);
+            await _context.SaveChangesAsync();
+        }
+
+        return yeniIlceler.Count;
+    }
+
+
+    // ============================================================
+    // MAHALLELERİ AKTAR
+    // ============================================================
+
+    public async Task<int> MahalleleriAktarAsync()
+    {
+        // TurkiyeAPI'den ilçeleri ve içlerindeki mahalleleri çek
+        var response =
+            await _httpClient.GetFromJsonAsync<TurkiyeApiResponse>(ApiUrl);
+
+        if (response == null || response.Data == null)
+        {
+            throw new Exception(
+                "TurkiyeAPI'den mahalle verileri alınamadı.");
+        }
+
+        // Marmara Bölgesi illeri
+        var marmaraPlakalari = new HashSet<int>
+        {
+            10, // Balıkesir
+            11, // Bilecik
+            16, // Bursa
+            17, // Çanakkale
+            22, // Edirne
+            34, // İstanbul
+            39, // Kırklareli
+            41, // Kocaeli
+            54, // Sakarya
+            59, // Tekirdağ
+            77  // Yalova
+        };
+
+        // PostgreSQL'deki ilçeleri getir
+        var ilceler = await _context.Ilceler
+            .AsNoTracking()
+            .ToListAsync();
+
+        // TurkiyeAPI ilçe ID'si → bizim İlçe ID'miz
+        var ilceByApiId = ilceler.ToDictionary(
+            x => x.ApiId,
+            x => x
+        );
+
+        // Daha önce aktarılmış mahalle API ID'lerini getir
+        var mevcutApiIdler = await _context.Mahalleler
+            .Select(x => x.ApiId)
+            .ToHashSetAsync();
+
+        var yeniMahalleler = new List<Mahalle>();
+
+        // TurkiyeAPI'den gelen ilçeleri dolaş
+        foreach (var ilceDto in response.Data)
+        {
+            // Marmara dışındaki illeri atla
+            if (!marmaraPlakalari.Contains(ilceDto.ProvinceId))
+            {
+                continue;
+            }
+
+            // PostgreSQL'de bu ilçenin karşılığı var mı?
+            if (!ilceByApiId.TryGetValue(
+                    ilceDto.Id,
+                    out var ilce))
+            {
+                continue;
+            }
+
+            // İlçenin mahalleleri
+            foreach (var mahalleDto in ilceDto.Neighborhoods)
+            {
+                // Mahalle zaten varsa tekrar ekleme
+                if (mevcutApiIdler.Contains(mahalleDto.Id))
+                {
+                    continue;
+                }
+
+                yeniMahalleler.Add(new Mahalle
+                {
+                    ApiId = mahalleDto.Id,
+                    Ad = mahalleDto.Name,
+                    IlceId = ilce.Id
+                });
+
+                // Aynı çalıştırmada tekrar eklenmesini önle
+                mevcutApiIdler.Add(mahalleDto.Id);
+            }
+        }
+
+        // Yeni mahalleleri PostgreSQL'e kaydet
+        if (yeniMahalleler.Count > 0)
+        {
+            await _context.Mahalleler.AddRangeAsync(yeniMahalleler);
 
             await _context.SaveChangesAsync();
         }
 
-        // Kaç yeni ilçe eklendiğini döndür
-        return yeniIlceler.Count;
+        return yeniMahalleler.Count;
     }
 }
 
 
-// TurkiyeAPI ana cevap modeli
+// ============================================================
+// TURKIYE API ANA CEVAP
+// ============================================================
+
 public class TurkiyeApiResponse
 {
     public string Status { get; set; } = string.Empty;
@@ -125,7 +218,10 @@ public class TurkiyeApiResponse
 }
 
 
-// TurkiyeAPI ilçe modeli
+// ============================================================
+// TURKIYE API İLÇE
+// ============================================================
+
 public class TurkiyeApiIlceDto
 {
     public int ProvinceId { get; set; }
@@ -135,4 +231,21 @@ public class TurkiyeApiIlceDto
     public string Province { get; set; } = string.Empty;
 
     public string Name { get; set; } = string.Empty;
+
+    // İlçenin mahalleleri
+    public List<TurkiyeApiMahalleDto> Neighborhoods { get; set; } = new();
+}
+
+
+// ============================================================
+// TURKIYE API MAHALLE
+// ============================================================
+
+public class TurkiyeApiMahalleDto
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+
+    public int Population { get; set; }
 }
