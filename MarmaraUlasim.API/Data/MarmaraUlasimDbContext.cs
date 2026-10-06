@@ -21,6 +21,7 @@ public class MarmaraUlasimDbContext : DbContext
     public DbSet<Hat> Hatlar => Set<Hat>();
     public DbSet<Sefer> Seferler => Set<Sefer>();
     public DbSet<SeferDurak> SeferDuraklar => Set<SeferDurak>();
+    public DbSet<GuzergahNoktasi> GuzergahNoktalari => Set<GuzergahNoktasi>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -125,7 +126,14 @@ modelBuilder.Entity<SeferDurak>()
         x.DurakSirasi
     })
     .IsUnique();
-
+modelBuilder.Entity<GuzergahNoktasi>()
+    .HasIndex(x => new
+    {
+        x.Kaynak,
+        x.ShapeId,
+        x.Sira
+    })
+    .IsUnique();
 
         // ============================================================
         // MARMARA BÖLGESİ İLLERİ

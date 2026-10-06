@@ -666,6 +666,198 @@ public async Task<int> SeferDuraklariniAktarAsync(
     return eklenen;
 }
 
+public async Task<int> GuzergahNoktalariniAktarAsync(
+    string gtfsKlasoru)
+{
+    if (!Directory.Exists(gtfsKlasoru))
+    {
+        throw new DirectoryNotFoundException(
+            $"GTFS klasörü bulunamadı: {gtfsKlasoru}");
+    }
+
+    var shapesFile = Path.Combine(
+        gtfsKlasoru,
+        "shapes.txt");
+
+    if (!File.Exists(shapesFile))
+    {
+        throw new FileNotFoundException(
+            "GTFS içerisinde shapes.txt bulunamadı.",
+            shapesFile);
+    }
+
+    var mevcutKayitlar =
+        await _context.GuzergahNoktalari
+            .Where(x => x.Kaynak == "KentKart-Kocaeli")
+            .Select(x => $"{x.ShapeId}|{x.Sira}")
+            .ToHashSetAsync();
+
+    int eklenen = 0;
+
+    using var reader =
+        new StreamReader(shapesFile);
+
+    var baslik =
+        await reader.ReadLineAsync();
+
+    if (string.IsNullOrWhiteSpace(baslik))
+    {
+        return 0;
+    }
+
+    var basliklar =
+        ParseCsvLine(baslik);
+
+    int shapeIdIndex =
+        basliklar.IndexOf("shape_id");
+
+    int latitudeIndex =
+        basliklar.IndexOf("shape_pt_lat");
+
+    int longitudeIndex =
+        basliklar.IndexOf("shape_pt_lon");
+
+    int sequenceIndex =
+        basliklar.IndexOf("shape_pt_sequence");
+
+    int distanceIndex =
+        basliklar.IndexOf("shape_dist_traveled");
+
+    if (shapeIdIndex < 0 ||
+        latitudeIndex < 0 ||
+        longitudeIndex < 0 ||
+        sequenceIndex < 0)
+    {
+        throw new Exception(
+            "shapes.txt içerisinde gerekli GTFS alanları bulunamadı.");
+    }
+
+    var batch =
+        new List<GuzergahNoktasi>();
+
+    const int batchSize = 2000;
+
+    string? satir;
+
+    while ((satir = await reader.ReadLineAsync()) != null)
+    {
+        if (string.IsNullOrWhiteSpace(satir))
+        {
+            continue;
+        }
+
+        var alanlar =
+            ParseCsvLine(satir);
+
+        int maksimumIndex = Math.Max(
+            Math.Max(shapeIdIndex, latitudeIndex),
+            Math.Max(longitudeIndex, sequenceIndex));
+
+        if (alanlar.Count <= maksimumIndex)
+        {
+            continue;
+        }
+
+        var shapeId =
+            alanlar[shapeIdIndex].Trim();
+
+        if (string.IsNullOrWhiteSpace(shapeId))
+        {
+            continue;
+        }
+
+        if (!double.TryParse(
+                alanlar[latitudeIndex].Trim(),
+                System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var enlem))
+        {
+            continue;
+        }
+
+        if (!double.TryParse(
+                alanlar[longitudeIndex].Trim(),
+                System.Globalization.NumberStyles.Float,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out var boylam))
+        {
+            continue;
+        }
+
+        if (!int.TryParse(
+                alanlar[sequenceIndex].Trim(),
+                out var sira))
+        {
+            continue;
+        }
+
+        var anahtar =
+            $"{shapeId}|{sira}";
+
+        if (mevcutKayitlar.Contains(anahtar))
+        {
+            continue;
+        }
+
+        double? mesafe = null;
+
+        if (distanceIndex >= 0 &&
+            alanlar.Count > distanceIndex)
+        {
+            if (double.TryParse(
+                    alanlar[distanceIndex].Trim(),
+                    System.Globalization.NumberStyles.Float,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out var parsedMesafe))
+            {
+                mesafe = parsedMesafe;
+            }
+        }
+
+        batch.Add(new GuzergahNoktasi
+        {
+            ShapeId = shapeId,
+            Enlem = enlem,
+            Boylam = boylam,
+            Sira = sira,
+            Mesafe = mesafe,
+            Kaynak = "KentKart-Kocaeli",
+            Aktif = true
+        });
+
+        mevcutKayitlar.Add(anahtar);
+
+        if (batch.Count >= batchSize)
+        {
+            await _context.GuzergahNoktalari
+                .AddRangeAsync(batch);
+
+            await _context.SaveChangesAsync();
+
+            eklenen += batch.Count;
+
+            batch.Clear();
+
+            _context.ChangeTracker.Clear();
+        }
+    }
+
+    if (batch.Count > 0)
+    {
+        await _context.GuzergahNoktalari
+            .AddRangeAsync(batch);
+
+        await _context.SaveChangesAsync();
+
+        eklenen += batch.Count;
+
+        batch.Clear();
+
+        _context.ChangeTracker.Clear();
+    }
+
+    return eklenen;
+}
 
 
 
