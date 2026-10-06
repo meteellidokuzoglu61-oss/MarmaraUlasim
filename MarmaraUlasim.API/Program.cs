@@ -3,14 +3,17 @@ using MarmaraUlasim.API.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Controllers
 builder.Services.AddControllers();
 
+// PostgreSQL
 builder.Services.AddDbContext<MarmaraUlasimDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("Default")
     )
 );
 
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Ionic", policy =>
@@ -22,20 +25,26 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// Swagger'ı her ortamda aç
+app.UseSwagger();
 
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "MarmaraUlasim API V1");
+    options.RoutePrefix = "swagger";
+});
+
+// CORS
 app.UseCors("Ionic");
 
-app.UseHttpsRedirection();
+// HTTPS yönlendirmesini şimdilik kapatıyoruz
+// app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
