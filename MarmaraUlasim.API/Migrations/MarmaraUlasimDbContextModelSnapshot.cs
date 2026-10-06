@@ -46,7 +46,7 @@ namespace MarmaraUlasim.API.Migrations
                     b.Property<double>("Enlem")
                         .HasColumnType("double precision");
 
-                    b.Property<int>("IlceId")
+                    b.Property<int?>("IlceId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Kaynak")
@@ -217,8 +217,7 @@ namespace MarmaraUlasim.API.Migrations
                     b.HasOne("MarmaraUlasim.API.Models.Ilce", "Ilce")
                         .WithMany()
                         .HasForeignKey("IlceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("MarmaraUlasim.API.Models.Mahalle", "Mahalle")
                         .WithMany()

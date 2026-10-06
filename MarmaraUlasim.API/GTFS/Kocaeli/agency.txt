@@ -1,0 +1,35 @@
+agency_id,agency_name,agency_url,agency_timezone
+78,ULAŞIM PARK A.Ş.,https://www.kentkart.com/,Europe/Istanbul
+17,SS. 5 Nolu Şehiriçi Koop.,https://www.kentkart.com/,Europe/Istanbul
+70,Minibüs Odasına Bağlı M Plakalar,https://www.kentkart.com/,Europe/Istanbul
+27,SS. 10 Nolu Körfez Koop.,https://www.kentkart.com/,Europe/Istanbul
+35,SS. 22 Nolu Y.Hereke Koop.,https://www.kentkart.com/,Europe/Istanbul
+43,SS. 98 Nolu Arslanbey Koop.,https://www.kentkart.com/,Europe/Istanbul
+41,SS. 129 Nolu Derbent Koop.,https://www.kentkart.com/,Europe/Istanbul
+24,SS. 80 Nolu Birleşik Kartepe Koop.,https://www.kentkart.com/,Europe/Istanbul
+44,SS. 68 Nolu Suadiye Koop.,https://www.kentkart.com/,Europe/Istanbul
+38,SS. 84 Nolu Uzuntarla Koop.,https://www.kentkart.com/,Europe/Istanbul
+14,SS. 195 NOLU DİLOVASI OTO. ve MİN. KARA. YOLCU TAŞ. KOOP.,https://www.kentkart.com/,Europe/Istanbul
+16,SS. 141 Nolu Koop. Gebze İzmit,https://www.kentkart.com/,Europe/Istanbul
+33,SS. 167 NOLU GEBZE MİN. MOT. TAŞ. KOOP.,https://www.kentkart.com/,Europe/Istanbul
+84,SS. 198 Nolu Köyler Min. ve Özel Halk Oto.TopluTaş.KarayoluTaş.Koop.,https://www.kentkart.com/,Europe/Istanbul
+13,SS. ÖZ DARICA MİNİBÜSÇÜLER ve Ö.HALK OTO. TOPLU TAŞ. MOT. TAŞ. KOOP.,https://www.kentkart.com/,Europe/Istanbul
+11,SS. 164 NOLU GEBZE ÇAYIROVA HALK OTO. ve MİN. KOOP.,https://www.kentkart.com/,Europe/Istanbul
+21,SS. 71 Nolu Kullar Koop.,https://www.kentkart.com/,Europe/Istanbul
+59,SS. 14 Nolu Yuvacık,https://www.kentkart.com/,Europe/Istanbul
+52,SS. 93 Nolu Yeşil Bahçecik Min. Ve Oto. Mot. Taş. Koop.,https://www.kentkart.com/,Europe/Istanbul
+53,SS. 54 Nolu Başiskele Min.ve Oto.Mot.Taş.Koop,https://www.kentkart.com/,Europe/Istanbul
+50,SS. 70 Nolu Yeniköy Koop.,https://www.kentkart.com/,Europe/Istanbul
+40,SS. 65 Nolu Yazlık Koop.,https://www.kentkart.com/,Europe/Istanbul
+56,SS. 142 Nolu Hisareyn Koop.,https://www.kentkart.com/,Europe/Istanbul
+34,SS. 46 Nolu İhsaniye Koop.,https://www.kentkart.com/,Europe/Istanbul
+58,İhsaniye-İzmit İhaleli,https://www.kentkart.com/,Europe/Istanbul
+36,SS. 41 Nolu Gölcük Koop.,https://www.kentkart.com/,Europe/Istanbul
+54,SS. 52 Nolu Saraylı-Örcün Koop.,https://www.kentkart.com/,Europe/Istanbul
+49,SS. 128 Nolu Şirinköy Koop. (Gölcük Şehir İçi ),https://www.kentkart.com/,Europe/Istanbul
+51,SS. 39 Nolu Değirmendere Koop.,https://www.kentkart.com/,Europe/Istanbul
+47,SS. 2 Nolu Karamürsel Koop.,https://www.kentkart.com/,Europe/Istanbul
+62,SS. 49 Nolu Minib. ve Küçük Otob. Mot. Taş.Koop.(Şehir İçi),https://www.kentkart.com/,Europe/Istanbul
+23,Kocaeli Test,https://www.kentkart.com/,Europe/Istanbul
+2,Kocaeli Büyükşehir Belediyesi Deniz Ulaşım Şube Müdürlüğü,https://www.kentkart.com/,Europe/Istanbul
+81,Kocaeli Büyükşehir Belediyesi Raylı Sistemler İşletmesi,https://www.kentkart.com/,Europe/Istanbul

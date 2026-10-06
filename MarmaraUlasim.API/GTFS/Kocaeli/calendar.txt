@@ -1,0 +1,4 @@
+service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
+service_1_MTWTFss,1,1,1,1,1,0,0,20261001,20261130
+service_2_mtwtfSs,0,0,0,0,0,1,0,20261001,20261130
+service_3_mtwtfsS,0,0,0,0,0,0,1,20261001,20261130

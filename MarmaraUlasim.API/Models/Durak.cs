@@ -14,7 +14,7 @@ public class Durak
 
     public double Boylam { get; set; }
 
-    public int IlceId { get; set; }
+    public int? IlceId { get; set; }
 
     public Ilce? Ilce { get; set; }
 

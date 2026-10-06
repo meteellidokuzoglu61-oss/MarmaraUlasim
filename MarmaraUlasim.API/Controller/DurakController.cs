@@ -198,6 +198,14 @@ public class DuraklarController : ControllerBase
                 dosya = ex.FileName
             });
         }
+
+        catch (DirectoryNotFoundException ex)
+{
+    return NotFound(new
+    {
+        message = ex.Message
+    });
+}
         catch (Exception ex)
         {
             return StatusCode(500, new

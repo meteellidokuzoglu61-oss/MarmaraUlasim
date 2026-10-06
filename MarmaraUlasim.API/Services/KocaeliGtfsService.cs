@@ -1,3 +1,4 @@
+using System.Globalization;
 using MarmaraUlasim.API.Data;
 using MarmaraUlasim.API.Models;
 using Microsoft.EntityFrameworkCore;
@@ -15,17 +16,18 @@ public class KocaeliGtfsService
     }
 
     public async Task<int> DuraklariAktarAsync(
-        string gtfsDosyaYolu)
+        string gtfsKlasoru)
     {
-        if (!File.Exists(gtfsDosyaYolu))
+        // Klasör kontrolü
+        if (!Directory.Exists(gtfsKlasoru))
         {
-            throw new FileNotFoundException(
-                "GTFS dosyası bulunamadı.",
-                gtfsDosyaYolu);
+            throw new DirectoryNotFoundException(
+                $"GTFS klasörü bulunamadı: {gtfsKlasoru}");
         }
 
+        // stops.txt kontrolü
         var stopsFile = Path.Combine(
-            gtfsDosyaYolu,
+            gtfsKlasoru,
             "stops.txt");
 
         if (!File.Exists(stopsFile))
@@ -35,6 +37,7 @@ public class KocaeliGtfsService
                 stopsFile);
         }
 
+        // Kocaeli
         var kocaeli = await _context.Iller
             .FirstOrDefaultAsync(x => x.PlakaKodu == 41);
 
@@ -44,17 +47,11 @@ public class KocaeliGtfsService
                 "Kocaeli ili veritabanında bulunamadı.");
         }
 
-        var ilceler = await _context.Ilceler
-            .Where(x => x.IlId == kocaeli.Id)
-            .ToListAsync();
-
-        var mevcutDuraklar = await _context.Duraklar
+        // Daha önce aktarılmış Kocaeli durak kodları
+        var mevcutKodlar = await _context.Duraklar
             .Where(x => x.Kaynak == "KentKart-Kocaeli")
-            .ToListAsync();
-
-        var mevcutKodlar = mevcutDuraklar
             .Select(x => x.DurakKodu)
-            .ToHashSet();
+            .ToHashSetAsync();
 
         var yeniDuraklar = new List<Durak>();
 
@@ -66,19 +63,20 @@ public class KocaeliGtfsService
             return 0;
         }
 
+        // CSV başlıkları
         var basliklar = ParseCsvLine(satirlar[0]);
 
-       int stopIdIndex =
-    basliklar.IndexOf("stop_id");
+        int stopIdIndex =
+            basliklar.IndexOf("stop_id");
 
-int stopNameIndex =
-    basliklar.IndexOf("stop_name");
+        int stopNameIndex =
+            basliklar.IndexOf("stop_name");
 
-int latIndex =
-    basliklar.IndexOf("stop_lat");
+        int latIndex =
+            basliklar.IndexOf("stop_lat");
 
-int lonIndex =
-    basliklar.IndexOf("stop_lon");
+        int lonIndex =
+            basliklar.IndexOf("stop_lon");
 
         if (stopIdIndex < 0 ||
             stopNameIndex < 0 ||
@@ -98,9 +96,11 @@ int lonIndex =
 
             var alanlar = ParseCsvLine(satir);
 
-            if (alanlar.Count <= Math.Max(
-                    Math.Max(stopIdIndex, stopNameIndex),
-                    Math.Max(latIndex, lonIndex)))
+            int maksimumIndex = Math.Max(
+                Math.Max(stopIdIndex, stopNameIndex),
+                Math.Max(latIndex, lonIndex));
+
+            if (alanlar.Count <= maksimumIndex)
             {
                 continue;
             }
@@ -112,18 +112,18 @@ int lonIndex =
                 alanlar[stopNameIndex].Trim();
 
             if (!double.TryParse(
-                    alanlar[latIndex],
-                    System.Globalization.NumberStyles.Float,
-                    System.Globalization.CultureInfo.InvariantCulture,
+                    alanlar[latIndex].Trim(),
+                    NumberStyles.Float,
+                    CultureInfo.InvariantCulture,
                     out var latitude))
             {
                 continue;
             }
 
             if (!double.TryParse(
-                    alanlar[lonIndex],
-                    System.Globalization.NumberStyles.Float,
-                    System.Globalization.CultureInfo.InvariantCulture,
+                    alanlar[lonIndex].Trim(),
+                    NumberStyles.Float,
+                    CultureInfo.InvariantCulture,
                     out var longitude))
             {
                 continue;
@@ -135,23 +135,14 @@ int lonIndex =
                 continue;
             }
 
+            // Daha önce aktarılmışsa atla
             if (mevcutKodlar.Contains(stopId))
             {
                 continue;
             }
 
-            // İlk aşamada koordinattan ilçe bulma yapılmayacak.
-            // Kocaeli olduğu için geçici olarak ilçe eşleştirmesi
-            // sonraki aşamada yapılacak.
-            var ilce = await IlceBulAsync(
-                stopName,
-                ilceler);
-
-            if (ilce == null)
-            {
-                continue;
-            }
-
+            // İlçe/Mahalle şu aşamada bilinmiyor.
+            // Koordinatları gerçek GTFS'den alıyoruz.
             yeniDuraklar.Add(new Durak
             {
                 DurakKodu = stopId,
@@ -159,7 +150,10 @@ int lonIndex =
                 Kaynak = "KentKart-Kocaeli",
                 Enlem = latitude,
                 Boylam = longitude,
-                IlceId = ilce.Id,
+
+                IlceId = null,
+                MahalleId = null,
+
                 Aktif = true
             });
 
@@ -177,32 +171,15 @@ int lonIndex =
         return yeniDuraklar.Count;
     }
 
-    private static async Task<Ilce?> IlceBulAsync(
-        string durakAdi,
-        List<Ilce> ilceler)
-    {
-        await Task.CompletedTask;
-
-        foreach (var ilce in ilceler)
-        {
-            if (durakAdi.Contains(
-                    ilce.Ad,
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                return ilce;
-            }
-        }
-
-        return null;
-    }
-
     private static List<string> ParseCsvLine(
         string line)
     {
         var result = new List<string>();
 
         bool quoted = false;
-        var current = new System.Text.StringBuilder();
+
+        var current =
+            new System.Text.StringBuilder();
 
         foreach (var character in line)
         {
@@ -216,6 +193,7 @@ int lonIndex =
             {
                 result.Add(current.ToString());
                 current.Clear();
+
                 continue;
             }
 

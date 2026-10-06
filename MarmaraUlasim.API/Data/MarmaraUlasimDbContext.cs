@@ -63,7 +63,7 @@ public class MarmaraUlasimDbContext : DbContext
             .HasOne(x => x.Ilce)
             .WithMany()
             .HasForeignKey(x => x.IlceId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.SetNull);
 
 
         // ============================================================
