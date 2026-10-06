@@ -307,6 +307,151 @@ public class KocaeliGtfsService
     return yeniHatlar.Count;
 }
 
+public async Task<int> SeferleriAktarAsync(
+    string gtfsKlasoru)
+{
+    if (!Directory.Exists(gtfsKlasoru))
+    {
+        throw new DirectoryNotFoundException(
+            $"GTFS klasörü bulunamadı: {gtfsKlasoru}");
+    }
+
+    var tripsFile = Path.Combine(
+        gtfsKlasoru,
+        "trips.txt");
+
+    if (!File.Exists(tripsFile))
+    {
+        throw new FileNotFoundException(
+            "GTFS içerisinde trips.txt bulunamadı.",
+            tripsFile);
+    }
+
+    var mevcutKodlar = await _context.Seferler
+        .Where(x => x.Kaynak == "KentKart-Kocaeli")
+        .Select(x => x.SeferKodu)
+        .ToHashSetAsync();
+
+    var hatKodlari = await _context.Hatlar
+        .Where(x => x.Kaynak == "KentKart-Kocaeli")
+        .Select(x => x.HatKodu)
+        .ToHashSetAsync();
+
+    var yeniSeferler = new List<Sefer>();
+
+    var satirlar = await File.ReadAllLinesAsync(
+        tripsFile);
+
+    if (satirlar.Length <= 1)
+    {
+        return 0;
+    }
+
+    var basliklar = ParseCsvLine(satirlar[0]);
+
+    int routeIdIndex =
+        basliklar.IndexOf("route_id");
+
+    int tripIdIndex =
+        basliklar.IndexOf("trip_id");
+
+    int serviceIdIndex =
+        basliklar.IndexOf("service_id");
+
+    int tripHeadsignIndex =
+        basliklar.IndexOf("trip_headsign");
+
+    if (routeIdIndex < 0 ||
+        tripIdIndex < 0)
+    {
+        throw new Exception(
+            "trips.txt içerisinde route_id veya trip_id bulunamadı.");
+    }
+
+    foreach (var satir in satirlar.Skip(1))
+    {
+        if (string.IsNullOrWhiteSpace(satir))
+        {
+            continue;
+        }
+
+        var alanlar = ParseCsvLine(satir);
+
+        int maksimumIndex = Math.Max(
+            routeIdIndex,
+            tripIdIndex);
+
+        if (alanlar.Count <= maksimumIndex)
+        {
+            continue;
+        }
+
+        var hatKodu =
+            alanlar[routeIdIndex].Trim();
+
+        var seferKodu =
+            alanlar[tripIdIndex].Trim();
+
+        if (string.IsNullOrWhiteSpace(hatKodu) ||
+            string.IsNullOrWhiteSpace(seferKodu))
+        {
+            continue;
+        }
+
+        // Hat gerçekten veritabanında var mı?
+        if (!hatKodlari.Contains(hatKodu))
+        {
+            continue;
+        }
+
+        // Daha önce aktarılmış mı?
+        if (mevcutKodlar.Contains(seferKodu))
+        {
+            continue;
+        }
+
+        string? servisKodu = null;
+
+        if (serviceIdIndex >= 0 &&
+            alanlar.Count > serviceIdIndex)
+        {
+            servisKodu =
+                alanlar[serviceIdIndex].Trim();
+        }
+
+        string? varisYonu = null;
+
+        if (tripHeadsignIndex >= 0 &&
+            alanlar.Count > tripHeadsignIndex)
+        {
+            varisYonu =
+                alanlar[tripHeadsignIndex].Trim();
+        }
+
+        yeniSeferler.Add(new Sefer
+        {
+            SeferKodu = seferKodu,
+            HatKodu = hatKodu,
+            ServisKodu = servisKodu,
+            VarisYonu = varisYonu,
+            Kaynak = "KentKart-Kocaeli",
+            Aktif = true
+        });
+
+        mevcutKodlar.Add(seferKodu);
+    }
+
+    if (yeniSeferler.Count > 0)
+    {
+        await _context.Seferler.AddRangeAsync(
+            yeniSeferler);
+
+        await _context.SaveChangesAsync();
+    }
+
+    return yeniSeferler.Count;
+}
+
     private static List<string> ParseCsvLine(
         string line)
     {

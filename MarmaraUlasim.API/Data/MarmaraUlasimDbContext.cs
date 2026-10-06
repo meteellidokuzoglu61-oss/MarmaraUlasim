@@ -19,6 +19,7 @@ public class MarmaraUlasimDbContext : DbContext
 
     public DbSet<Durak> Duraklar => Set<Durak>();
     public DbSet<Hat> Hatlar => Set<Hat>();
+    public DbSet<Sefer> Seferler => Set<Sefer>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -84,6 +85,21 @@ public class MarmaraUlasimDbContext : DbContext
     {
         x.Kaynak,
         x.DurakKodu
+    })
+    .IsUnique();
+
+    modelBuilder.Entity<Sefer>()
+    .HasOne(x => x.Hat)
+    .WithMany()
+    .HasForeignKey(x => x.HatKodu)
+    .HasPrincipalKey(x => x.HatKodu)
+    .OnDelete(DeleteBehavior.Cascade);
+
+modelBuilder.Entity<Sefer>()
+    .HasIndex(x => new
+    {
+        x.Kaynak,
+        x.SeferKodu
     })
     .IsUnique();
 

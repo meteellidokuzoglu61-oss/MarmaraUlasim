@@ -265,6 +265,55 @@ public async Task<IActionResult> ImportKocaeliHatlar(
     }
 }
 
+[HttpPost("import/kocaeli/seferler")]
+public async Task<IActionResult> ImportKocaeliSeferler(
+    [FromQuery] string gtfsKlasoru)
+{
+    try
+    {
+        if (string.IsNullOrWhiteSpace(gtfsKlasoru))
+        {
+            return BadRequest(new
+            {
+                message = "GTFS klasör yolu belirtilmelidir."
+            });
+        }
+
+        var eklenen =
+            await _kocaeliGtfsService
+                .SeferleriAktarAsync(gtfsKlasoru);
+
+        return Ok(new
+        {
+            message = "Kocaeli sefer aktarımı tamamlandı.",
+            eklenenSeferSayisi = eklenen
+        });
+    }
+    catch (DirectoryNotFoundException ex)
+    {
+        return NotFound(new
+        {
+            message = ex.Message
+        });
+    }
+    catch (FileNotFoundException ex)
+    {
+        return NotFound(new
+        {
+            message = ex.Message,
+            dosya = ex.FileName
+        });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new
+        {
+            message = "Kocaeli sefer aktarımı sırasında hata oluştu.",
+            detay = ex.Message
+        });
+    }
+}
+
     // ============================================================
     // DURAK SAYISI
     // ============================================================
