@@ -21,92 +21,78 @@ public class TurkiyeApiService
         _context = context;
     }
 
-    public async Task<int> IlceleriAktarAsync()
+   public async Task<int> IlceleriAktarAsync()
+{
+    var response =
+        await _httpClient.GetFromJsonAsync<TurkiyeApiResponse>(ApiUrl);
+
+    if (response == null || response.Data == null)
     {
-        var response =
-            await _httpClient.GetFromJsonAsync<TurkiyeApiResponse>(ApiUrl);
-
-        if (response == null || response.Data == null)
-        {
-            throw new Exception(
-                "TurkiyeAPI'den ilçe verileri alınamadı.");
-        }
-
-        // Sadece Marmara Bölgesi illerinin plaka kodları
-        var marmaraPlakalari = new HashSet<int>
-        {
-            10, // Balıkesir
-            11, // Bilecik
-            16, // Bursa
-            17, // Çanakkale
-            22, // Edirne
-            34, // İstanbul
-            39, // Kırklareli
-            41, // Kocaeli
-            54, // Sakarya
-            59, // Tekirdağ
-            77  // Yalova
-        };
-
-        // PostgreSQL'deki iller
-        var iller = await _context.Iller
-            .AsNoTracking()
-            .ToListAsync();
-
-        // Plaka kodundan bizim Il kaydımıza ulaş
-        var ilByPlate = iller.ToDictionary(
-            x => x.PlakaKodu,
-            x => x
-        );
-
-        // Daha önce aktarılmış ilçeler
-        var mevcutApiIdler = await _context.Ilceler
-            .Select(x => x.ApiId)
-            .ToHashSetAsync();
-
-        var yeniIlceler = new List<Ilce>();
-
-        foreach (var dto in response.Data)
-        {
-            // Marmara dışındaki illeri geç
-            if (!marmaraPlakalari.Contains(dto.ProvinceId))
-            {
-                continue;
-            }
-
-            // PostgreSQL'de karşılık gelen il var mı?
-            if (!ilByPlate.TryGetValue(
-                    dto.ProvinceId,
-                    out var il))
-            {
-                continue;
-            }
-
-            // Daha önce aktarılmışsa tekrar ekleme
-            if (mevcutApiIdler.Contains(dto.Id))
-            {
-                continue;
-            }
-
-            yeniIlceler.Add(new Ilce
-            {
-                ApiId = dto.Id,
-                Ad = dto.Name,
-                IlId = il.Id
-            });
-
-            mevcutApiIdler.Add(dto.Id);
-        }
-
-        if (yeniIlceler.Count > 0)
-        {
-            await _context.Ilceler.AddRangeAsync(yeniIlceler);
-
-            await _context.SaveChangesAsync();
-        }
-
-        return yeniIlceler.Count;
+        throw new Exception("TurkiyeAPI'den veri alınamadı.");
     }
+
+    var marmaraPlakalari = new HashSet<int>
+    {
+        10, 11, 16, 17, 22, 34, 39, 41, 54, 59, 77
+    };
+
+    var toplamKayit = response.Data.Count;
+
+    var marmaraKayitlari = response.Data
+        .Where(x => marmaraPlakalari.Contains(x.ProvinceId))
+        .ToList();
+
+    var iller = await _context.Iller
+        .AsNoTracking()
+        .ToListAsync();
+
+    var ilByPlate = iller.ToDictionary(
+        x => x.PlakaKodu,
+        x => x
+    );
+
+    var eslesenKayitlar = marmaraKayitlari
+        .Where(x => ilByPlate.ContainsKey(x.ProvinceId))
+        .ToList();
+
+    var mevcutApiIdler = await _context.Ilceler
+        .Select(x => x.ApiId)
+        .ToHashSetAsync();
+
+    var yeniIlceler = new List<Ilce>();
+
+    foreach (var dto in eslesenKayitlar)
+    {
+        if (mevcutApiIdler.Contains(dto.Id))
+        {
+            continue;
+        }
+
+        var il = ilByPlate[dto.ProvinceId];
+
+        yeniIlceler.Add(new Ilce
+        {
+            ApiId = dto.Id,
+            Ad = dto.Name,
+            IlId = il.Id
+        });
+
+        mevcutApiIdler.Add(dto.Id);
+    }
+
+    if (yeniIlceler.Count > 0)
+    {
+        await _context.Ilceler.AddRangeAsync(yeniIlceler);
+        await _context.SaveChangesAsync();
+    }
+
+    throw new Exception(
+        $"Toplam API kaydı: {toplamKayit} | " +
+        $"Marmara kaydı: {marmaraKayitlari.Count} | " +
+        $"İl ile eşleşen kayıt: {eslesenKayitlar.Count} | " +
+        $"Yeni ilçe: {yeniIlceler.Count}"
+    );
+}
 }
 
 
