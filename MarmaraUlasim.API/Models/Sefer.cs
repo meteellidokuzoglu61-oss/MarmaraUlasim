@@ -17,4 +17,6 @@ public class Sefer
     public bool Aktif { get; set; } = true;
 
     public Hat? Hat { get; set; }
+
+    public string? ShapeId { get; set; }
 }

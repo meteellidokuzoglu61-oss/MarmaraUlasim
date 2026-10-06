@@ -327,6 +327,69 @@ public async Task<IActionResult> ImportKocaeliGuzergah(
         });
     }
 }
+[HttpPost("import/kocaeli/sefer-shape-id")]
+public async Task<IActionResult> ImportKocaeliSeferShapeId(
+    [FromQuery] string gtfsKlasoru)
+{
+    try
+    {
+        if (string.IsNullOrWhiteSpace(gtfsKlasoru))
+        {
+            return BadRequest(new
+            {
+                message =
+                    "GTFS klasör yolu belirtilmelidir."
+            });
+        }
+
+        var guncellenen =
+            await _kocaeliGtfsService
+                .SeferShapeIdleriniAktarAsync(
+                    gtfsKlasoru);
+
+        return Ok(new
+        {
+            message =
+                "Kocaeli sefer ShapeId aktarımı tamamlandı.",
+
+            guncellenenSeferSayisi =
+                guncellenen
+        });
+    }
+    catch (DirectoryNotFoundException ex)
+    {
+        return NotFound(new
+        {
+            message = ex.Message
+        });
+    }
+    catch (FileNotFoundException ex)
+    {
+        return NotFound(new
+        {
+            message = ex.Message,
+            dosya = ex.FileName
+        });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new
+        {
+            message =
+                "Sefer ShapeId aktarımı sırasında hata oluştu.",
+
+            detay = ex.Message,
+
+            innerException =
+                ex.InnerException?.Message,
+
+            innerInnerException =
+                ex.InnerException?
+                    .InnerException?
+                    .Message
+        });
+    }
+}
 
 [HttpPost("import/kocaeli/sefer-duraklari")]
 public async Task<IActionResult> ImportKocaeliSeferDuraklari(

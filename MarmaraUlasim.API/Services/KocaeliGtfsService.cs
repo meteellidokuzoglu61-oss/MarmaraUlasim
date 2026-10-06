@@ -859,6 +859,137 @@ public async Task<int> GuzergahNoktalariniAktarAsync(
     return eklenen;
 }
 
+public async Task<int> SeferShapeIdleriniAktarAsync(
+    string gtfsKlasoru)
+{
+    if (!Directory.Exists(gtfsKlasoru))
+    {
+        throw new DirectoryNotFoundException(
+            $"GTFS klasörü bulunamadı: {gtfsKlasoru}");
+    }
+
+    var tripsFile = Path.Combine(
+        gtfsKlasoru,
+        "trips.txt");
+
+    if (!File.Exists(tripsFile))
+    {
+        throw new FileNotFoundException(
+            "GTFS içerisinde trips.txt bulunamadı.",
+            tripsFile);
+    }
+
+    var seferler = await _context.Seferler
+        .Where(x => x.Kaynak == "KentKart-Kocaeli")
+        .ToDictionaryAsync(
+            x => x.SeferKodu,
+            x => x);
+
+    int guncellenen = 0;
+
+    using var reader =
+        new StreamReader(tripsFile);
+
+    var baslik =
+        await reader.ReadLineAsync();
+
+    if (string.IsNullOrWhiteSpace(baslik))
+    {
+        return 0;
+    }
+
+    var basliklar =
+        ParseCsvLine(baslik);
+
+    int tripIdIndex =
+        basliklar.IndexOf("trip_id");
+
+    int shapeIdIndex =
+        basliklar.IndexOf("shape_id");
+
+    if (tripIdIndex < 0)
+    {
+        throw new Exception(
+            "trips.txt içerisinde trip_id alanı bulunamadı.");
+    }
+
+    if (shapeIdIndex < 0)
+    {
+        throw new Exception(
+            "trips.txt içerisinde shape_id alanı bulunamadı.");
+    }
+
+    string? satir;
+
+    while ((satir = await reader.ReadLineAsync()) != null)
+    {
+        if (string.IsNullOrWhiteSpace(satir))
+        {
+            continue;
+        }
+
+        var alanlar =
+            ParseCsvLine(satir);
+
+        int maksimumIndex =
+            Math.Max(
+                tripIdIndex,
+                shapeIdIndex);
+
+        if (alanlar.Count <= maksimumIndex)
+        {
+            continue;
+        }
+
+        var tripId =
+            alanlar[tripIdIndex].Trim();
+
+        var shapeId =
+            alanlar[shapeIdIndex].Trim();
+
+        if (string.IsNullOrWhiteSpace(tripId) ||
+            string.IsNullOrWhiteSpace(shapeId))
+        {
+            continue;
+        }
+
+        if (!seferler.TryGetValue(
+                tripId,
+                out var sefer))
+        {
+            continue;
+        }
+
+        if (sefer.ShapeId == shapeId)
+        {
+            continue;
+        }
+
+        sefer.ShapeId = shapeId;
+
+        guncellenen++;
+
+        if (guncellenen % 2000 == 0)
+        {
+            await _context.SaveChangesAsync();
+
+            _context.ChangeTracker.Clear();
+
+            seferler = await _context.Seferler
+                .Where(x => x.Kaynak == "KentKart-Kocaeli")
+                .ToDictionaryAsync(
+                    x => x.SeferKodu,
+                    x => x);
+        }
+    }
+
+    await _context.SaveChangesAsync();
+
+    _context.ChangeTracker.Clear();
+
+    return guncellenen;
+}
+
 
 
     private static List<string> ParseCsvLine(

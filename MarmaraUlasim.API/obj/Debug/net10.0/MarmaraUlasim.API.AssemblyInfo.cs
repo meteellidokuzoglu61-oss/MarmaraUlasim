@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MarmaraUlasim.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d5f203b366679668eb6a1b06337f8506301e0024")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fa50f4e331023e7c0483222d1ec15e8862652b32")]
 [assembly: System.Reflection.AssemblyProductAttribute("MarmaraUlasim.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MarmaraUlasim.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
