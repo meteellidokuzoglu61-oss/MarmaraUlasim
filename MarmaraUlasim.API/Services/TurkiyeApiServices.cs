@@ -33,18 +33,18 @@ public class TurkiyeApiService
                 "TurkiyeAPI'den ilçe verileri alınamadı.");
         }
 
-        // PostgreSQL'deki illeri al
+        // PostgreSQL'deki 11 Marmara ilini getir
         var iller = await _context.Iller
             .AsNoTracking()
             .ToListAsync();
 
-        // Plaka koduna göre hızlı arama
-        var ilByPlate = iller.ToDictionary(
-            x => x.PlakaKodu,
+        // İl adına göre eşleştirme
+        var ilByName = iller.ToDictionary(
+            x => Normalize(x.Ad),
             x => x
         );
 
-        // Daha önce aktarılmış ilçe API ID'lerini al
+        // Daha önce aktarılmış ilçeleri kontrol et
         var mevcutApiIdler = await _context.Ilceler
             .Select(x => x.ApiId)
             .ToHashSetAsync();
@@ -53,22 +53,11 @@ public class TurkiyeApiService
 
         foreach (var dto in response.Data)
         {
-            /*
-             * TurkiyeAPI provinceId değerini
-             * bizim PlakaKodu ile karşılaştırıyoruz.
-             *
-             * Örneğin:
-             * İstanbul = 34
-             * Kocaeli = 41
-             * Sakarya = 54
-             *
-             * Adana = 1 olduğu için
-             * bizim Marmara illerimiz arasında bulunamayacak.
-             */
+            // TurkiyeAPI'deki il adını normalize et
+            var ilAdi = Normalize(dto.Province);
 
-            if (!ilByPlate.TryGetValue(
-                    dto.ProvinceId,
-                    out var il))
+            // Sadece bizim Marmara illerimizi kabul et
+            if (!ilByName.TryGetValue(ilAdi, out var il))
             {
                 continue;
             }
@@ -89,20 +78,33 @@ public class TurkiyeApiService
             mevcutApiIdler.Add(dto.Id);
         }
 
-        // Yeni ilçeleri PostgreSQL'e kaydet
+        // PostgreSQL'e kaydet
         if (yeniIlceler.Count > 0)
         {
             await _context.Ilceler.AddRangeAsync(yeniIlceler);
-
             await _context.SaveChangesAsync();
         }
 
         return yeniIlceler.Count;
     }
+
+    // Türkçe karakter ve büyük/küçük harf farklarını azaltır
+    private static string Normalize(string value)
+    {
+        return value
+            .Trim()
+            .ToUpperInvariant()
+            .Replace("İ", "I")
+            .Replace("Ş", "S")
+            .Replace("Ğ", "G")
+            .Replace("Ü", "U")
+            .Replace("Ö", "O")
+            .Replace("Ç", "C");
+    }
 }
 
 
-// TurkiyeAPI ana cevabı
+// TurkiyeAPI ana cevap modeli
 public class TurkiyeApiResponse
 {
     public string Status { get; set; } = string.Empty;
