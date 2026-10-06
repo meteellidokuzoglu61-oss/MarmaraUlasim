@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<TurkiyeApiService>();
+builder.Services.AddScoped<KocaeliGtfsService>();
 
 // PostgreSQL
 builder.Services.AddDbContext<MarmaraUlasimDbContext>(options =>
