@@ -28,10 +28,8 @@ public class DuraklarController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var duraklar = await _context.Duraklar
-            .Include(x => x.Ilce)
-            .ThenInclude(x => x!.Il)
-            .Include(x => x.Mahalle)
-            .OrderBy(x => x.Ilce!.Ad)
+            .AsNoTracking()
+            .OrderBy(x => x.Ilce != null ? x.Ilce.Ad : "")
             .ThenBy(x => x.Ad)
             .Select(x => new
             {
@@ -44,15 +42,25 @@ public class DuraklarController : ControllerBase
                 x.Aktif,
 
                 IlceId = x.IlceId,
-                Ilce = x.Ilce!.Ad,
+
+                Ilce = x.Ilce != null
+                    ? x.Ilce.Ad
+                    : null,
 
                 MahalleId = x.MahalleId,
+
                 Mahalle = x.Mahalle != null
                     ? x.Mahalle.Ad
                     : null,
 
-                Il = x.Ilce!.Il!.Ad,
-                PlakaKodu = x.Ilce!.Il!.PlakaKodu
+                Il = x.Ilce != null && x.Ilce.Il != null
+                    ? x.Ilce.Il.Ad
+                    : null,
+
+                PlakaKodu =
+                    x.Ilce != null && x.Ilce.Il != null
+                        ? (int?)x.Ilce.Il.PlakaKodu
+                        : null
             })
             .ToListAsync();
 
@@ -67,9 +75,7 @@ public class DuraklarController : ControllerBase
     public async Task<IActionResult> GetById(int id)
     {
         var durak = await _context.Duraklar
-            .Include(x => x.Ilce)
-            .ThenInclude(x => x!.Il)
-            .Include(x => x.Mahalle)
+            .AsNoTracking()
             .Where(x => x.Id == id)
             .Select(x => new
             {
@@ -82,15 +88,25 @@ public class DuraklarController : ControllerBase
                 x.Aktif,
 
                 IlceId = x.IlceId,
-                Ilce = x.Ilce!.Ad,
+
+                Ilce = x.Ilce != null
+                    ? x.Ilce.Ad
+                    : null,
 
                 MahalleId = x.MahalleId,
+
                 Mahalle = x.Mahalle != null
                     ? x.Mahalle.Ad
                     : null,
 
-                Il = x.Ilce!.Il!.Ad,
-                PlakaKodu = x.Ilce!.Il!.PlakaKodu
+                Il = x.Ilce != null && x.Ilce.Il != null
+                    ? x.Ilce.Il.Ad
+                    : null,
+
+                PlakaKodu =
+                    x.Ilce != null && x.Ilce.Il != null
+                        ? (int?)x.Ilce.Il.PlakaKodu
+                        : null
             })
             .FirstOrDefaultAsync();
 
@@ -113,8 +129,8 @@ public class DuraklarController : ControllerBase
     public async Task<IActionResult> GetByIlce(int ilceId)
     {
         var duraklar = await _context.Duraklar
+            .AsNoTracking()
             .Where(x => x.IlceId == ilceId)
-            .Include(x => x.Mahalle)
             .OrderBy(x => x.Ad)
             .Select(x => new
             {
@@ -127,6 +143,7 @@ public class DuraklarController : ControllerBase
                 x.Aktif,
 
                 MahalleId = x.MahalleId,
+
                 Mahalle = x.Mahalle != null
                     ? x.Mahalle.Ad
                     : null
@@ -144,6 +161,7 @@ public class DuraklarController : ControllerBase
     public async Task<IActionResult> GetByMahalle(int mahalleId)
     {
         var duraklar = await _context.Duraklar
+            .AsNoTracking()
             .Where(x => x.MahalleId == mahalleId)
             .OrderBy(x => x.Ad)
             .Select(x => new
@@ -163,7 +181,7 @@ public class DuraklarController : ControllerBase
     }
 
     // ============================================================
-    // KOCAELİ GTFS AKTAR
+    // KOCAELİ GTFS - DURAK AKTAR
     // ============================================================
 
     [HttpPost("import/kocaeli")]
@@ -198,358 +216,387 @@ public class DuraklarController : ControllerBase
                 dosya = ex.FileName
             });
         }
-
         catch (DirectoryNotFoundException ex)
-{
-    return NotFound(new
-    {
-        message = ex.Message
-    });
-}
+        {
+            return NotFound(new
+            {
+                message = ex.Message
+            });
+        }
         catch (Exception ex)
         {
             return StatusCode(500, new
             {
-                message = "Kocaeli durak aktarımı sırasında hata oluştu.",
+                message =
+                    "Kocaeli durak aktarımı sırasında hata oluştu.",
                 detay = ex.Message
             });
         }
     }
 
+    // ============================================================
+    // KOCAELİ GTFS - HATLAR
+    // ============================================================
+
     [HttpPost("import/kocaeli/hatlar")]
-public async Task<IActionResult> ImportKocaeliHatlar(
-    [FromQuery] string gtfsKlasoru)
-{
-    try
+    public async Task<IActionResult> ImportKocaeliHatlar(
+        [FromQuery] string gtfsKlasoru)
     {
-        if (string.IsNullOrWhiteSpace(gtfsKlasoru))
+        try
         {
-            return BadRequest(new
+            if (string.IsNullOrWhiteSpace(gtfsKlasoru))
             {
-                message = "GTFS klasör yolu belirtilmelidir."
+                return BadRequest(new
+                {
+                    message = "GTFS klasör yolu belirtilmelidir."
+                });
+            }
+
+            var eklenen =
+                await _kocaeliGtfsService
+                    .HatlariAktarAsync(gtfsKlasoru);
+
+            return Ok(new
+            {
+                message = "Kocaeli hat aktarımı tamamlandı.",
+                eklenenHatSayisi = eklenen
             });
         }
-
-        var eklenen =
-            await _kocaeliGtfsService
-                .HatlariAktarAsync(gtfsKlasoru);
-
-        return Ok(new
+        catch (DirectoryNotFoundException ex)
         {
-            message = "Kocaeli hat aktarımı tamamlandı.",
-            eklenenHatSayisi = eklenen
-        });
-    }
-    catch (DirectoryNotFoundException ex)
-    {
-        return NotFound(new
-        {
-            message = ex.Message
-        });
-    }
-    catch (FileNotFoundException ex)
-    {
-        return NotFound(new
-        {
-            message = ex.Message,
-            dosya = ex.FileName
-        });
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, new
-        {
-            message = "Kocaeli hat aktarımı sırasında hata oluştu.",
-            detay = ex.Message
-        });
-    }
-}
-
-[HttpPost("import/kocaeli/guzergah")]
-public async Task<IActionResult> ImportKocaeliGuzergah(
-    [FromQuery] string gtfsKlasoru)
-{
-    try
-    {
-        if (string.IsNullOrWhiteSpace(gtfsKlasoru))
-        {
-            return BadRequest(new
+            return NotFound(new
             {
-                message = "GTFS klasör yolu belirtilmelidir."
+                message = ex.Message
             });
         }
-
-        var eklenen =
-            await _kocaeliGtfsService
-                .GuzergahNoktalariniAktarAsync(
-                    gtfsKlasoru);
-
-        return Ok(new
+        catch (FileNotFoundException ex)
         {
-            message =
-                "Kocaeli güzergâh aktarımı tamamlandı.",
-
-            eklenenGuzergahNoktasiSayisi =
-                eklenen
-        });
-    }
-    catch (DirectoryNotFoundException ex)
-    {
-        return NotFound(new
+            return NotFound(new
+            {
+                message = ex.Message,
+                dosya = ex.FileName
+            });
+        }
+        catch (Exception ex)
         {
-            message = ex.Message
-        });
-    }
-    catch (FileNotFoundException ex)
-    {
-        return NotFound(new
-        {
-            message = ex.Message,
-            dosya = ex.FileName
-        });
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, new
-        {
-            message =
-                "Güzergâh aktarımı sırasında hata oluştu.",
-
-            detay = ex.Message,
-
-            innerException =
-                ex.InnerException?.Message,
-
-            innerInnerException =
-                ex.InnerException?
-                    .InnerException?
-                    .Message
-        });
-    }
-}
-[HttpPost("import/kocaeli/sefer-shape-id")]
-public async Task<IActionResult> ImportKocaeliSeferShapeId(
-    [FromQuery] string gtfsKlasoru)
-{
-    try
-    {
-        if (string.IsNullOrWhiteSpace(gtfsKlasoru))
-        {
-            return BadRequest(new
+            return StatusCode(500, new
             {
                 message =
-                    "GTFS klasör yolu belirtilmelidir."
+                    "Kocaeli hat aktarımı sırasında hata oluştu.",
+                detay = ex.Message
             });
         }
-
-        var guncellenen =
-            await _kocaeliGtfsService
-                .SeferShapeIdleriniAktarAsync(
-                    gtfsKlasoru);
-
-        return Ok(new
-        {
-            message =
-                "Kocaeli sefer ShapeId aktarımı tamamlandı.",
-
-            guncellenenSeferSayisi =
-                guncellenen
-        });
     }
-    catch (DirectoryNotFoundException ex)
+
+    // ============================================================
+    // KOCAELİ GTFS - GÜZERGÂH
+    // ============================================================
+
+    [HttpPost("import/kocaeli/guzergah")]
+    public async Task<IActionResult> ImportKocaeliGuzergah(
+        [FromQuery] string gtfsKlasoru)
     {
-        return NotFound(new
+        try
         {
-            message = ex.Message
-        });
+            if (string.IsNullOrWhiteSpace(gtfsKlasoru))
+            {
+                return BadRequest(new
+                {
+                    message = "GTFS klasör yolu belirtilmelidir."
+                });
+            }
+
+            var eklenen =
+                await _kocaeliGtfsService
+                    .GuzergahNoktalariniAktarAsync(
+                        gtfsKlasoru);
+
+            return Ok(new
+            {
+                message =
+                    "Kocaeli güzergâh aktarımı tamamlandı.",
+
+                eklenenGuzergahNoktasiSayisi =
+                    eklenen
+            });
+        }
+        catch (DirectoryNotFoundException ex)
+        {
+            return NotFound(new
+            {
+                message = ex.Message
+            });
+        }
+        catch (FileNotFoundException ex)
+        {
+            return NotFound(new
+            {
+                message = ex.Message,
+                dosya = ex.FileName
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                message =
+                    "Güzergâh aktarımı sırasında hata oluştu.",
+
+                detay = ex.Message,
+
+                innerException =
+                    ex.InnerException?.Message,
+
+                innerInnerException =
+                    ex.InnerException?
+                        .InnerException?
+                        .Message
+            });
+        }
     }
-    catch (FileNotFoundException ex)
+
+    // ============================================================
+    // KOCAELİ GTFS - SEFER SHAPE ID
+    // ============================================================
+
+    [HttpPost("import/kocaeli/sefer-shape-id")]
+    public async Task<IActionResult> ImportKocaeliSeferShapeId(
+        [FromQuery] string gtfsKlasoru)
     {
-        return NotFound(new
+        try
         {
-            message = ex.Message,
-            dosya = ex.FileName
-        });
+            if (string.IsNullOrWhiteSpace(gtfsKlasoru))
+            {
+                return BadRequest(new
+                {
+                    message =
+                        "GTFS klasör yolu belirtilmelidir."
+                });
+            }
+
+            var guncellenen =
+                await _kocaeliGtfsService
+                    .SeferShapeIdleriniAktarAsync(
+                        gtfsKlasoru);
+
+            return Ok(new
+            {
+                message =
+                    "Kocaeli sefer ShapeId aktarımı tamamlandı.",
+
+                guncellenenSeferSayisi =
+                    guncellenen
+            });
+        }
+        catch (DirectoryNotFoundException ex)
+        {
+            return NotFound(new
+            {
+                message = ex.Message
+            });
+        }
+        catch (FileNotFoundException ex)
+        {
+            return NotFound(new
+            {
+                message = ex.Message,
+                dosya = ex.FileName
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                message =
+                    "Sefer ShapeId aktarımı sırasında hata oluştu.",
+
+                detay = ex.Message,
+
+                innerException =
+                    ex.InnerException?.Message,
+
+                innerInnerException =
+                    ex.InnerException?
+                        .InnerException?
+                        .Message
+            });
+        }
     }
-    catch (Exception ex)
+
+    // ============================================================
+    // SEFER GÜZERGÂHI
+    // ============================================================
+
+    [HttpGet("sefer/{seferKodu}/guzergah")]
+    public async Task<IActionResult> GetSeferGuzergahi(
+        string seferKodu)
     {
-        return StatusCode(500, new
-        {
-            message =
-                "Sefer ShapeId aktarımı sırasında hata oluştu.",
-
-            detay = ex.Message,
-
-            innerException =
-                ex.InnerException?.Message,
-
-            innerInnerException =
-                ex.InnerException?
-                    .InnerException?
-                    .Message
-        });
-    }
-}
-
-[HttpGet("sefer/{seferKodu}/guzergah")]
-public async Task<IActionResult> GetSeferGuzergahi(
-    string seferKodu)
-{
-    var sefer = await _context.Seferler
-        .AsNoTracking()
-        .FirstOrDefaultAsync(x =>
-            x.SeferKodu == seferKodu &&
-            x.Kaynak == "KentKart-Kocaeli");
-
-    if (sefer == null)
-    {
-        return NotFound(new
-        {
-            message = "Sefer bulunamadı."
-        });
-    }
-
-    if (string.IsNullOrWhiteSpace(sefer.ShapeId))
-    {
-        return NotFound(new
-        {
-            message =
-                "Bu sefer için güzergâh bilgisi bulunamadı."
-        });
-    }
-
-    var noktalar =
-        await _context.GuzergahNoktalari
+        var sefer = await _context.Seferler
             .AsNoTracking()
-            .Where(x =>
-                x.ShapeId == sefer.ShapeId &&
-                x.Kaynak == "KentKart-Kocaeli" &&
-                x.Aktif)
-            .OrderBy(x => x.Sira)
-            .Select(x => new
-            {
-                x.Sira,
-                enlem = x.Enlem,
-                boylam = x.Boylam,
-                mesafe = x.Mesafe
-            })
-            .ToListAsync();
+            .FirstOrDefaultAsync(x =>
+                x.SeferKodu == seferKodu &&
+                x.Kaynak == "KentKart-Kocaeli");
 
-    return Ok(new
-    {
-        seferKodu = sefer.SeferKodu,
-        hatKodu = sefer.HatKodu,
-        shapeId = sefer.ShapeId,
-        noktaSayisi = noktalar.Count,
-        noktalar
-    });
-}
-
-[HttpPost("import/kocaeli/sefer-duraklari")]
-public async Task<IActionResult> ImportKocaeliSeferDuraklari(
-    [FromQuery] string gtfsKlasoru)
-{
-    try
-    {
-        if (string.IsNullOrWhiteSpace(gtfsKlasoru))
+        if (sefer == null)
         {
-            return BadRequest(new
+            return NotFound(new
             {
-                message = "GTFS klasör yolu belirtilmelidir."
+                message = "Sefer bulunamadı."
             });
         }
 
-        var eklenen =
-            await _kocaeliGtfsService
-                .SeferDuraklariniAktarAsync(gtfsKlasoru);
-
-        return Ok(new
+        if (string.IsNullOrWhiteSpace(sefer.ShapeId))
         {
-            message =
-                "Kocaeli sefer-durak aktarımı tamamlandı.",
-
-            eklenenSeferDurakSayisi = eklenen
-        });
-    }
-    catch (DirectoryNotFoundException ex)
-    {
-        return NotFound(new
-        {
-            message = ex.Message
-        });
-    }
-    catch (FileNotFoundException ex)
-    {
-        return NotFound(new
-        {
-            message = ex.Message,
-            dosya = ex.FileName
-        });
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, new
-        {
-            message =
-                "Sefer-durak aktarımı sırasında hata oluştu.",
-
-            detay = ex.Message
-        });
-    }
-}
-
-[HttpPost("import/kocaeli/seferler")]
-public async Task<IActionResult> ImportKocaeliSeferler(
-    [FromQuery] string gtfsKlasoru)
-{
-    try
-    {
-        if (string.IsNullOrWhiteSpace(gtfsKlasoru))
-        {
-            return BadRequest(new
+            return NotFound(new
             {
-                message = "GTFS klasör yolu belirtilmelidir."
+                message =
+                    "Bu sefer için güzergâh bilgisi bulunamadı."
             });
         }
 
-        var eklenen =
-            await _kocaeliGtfsService
-                .SeferleriAktarAsync(gtfsKlasoru);
+        var noktalar =
+            await _context.GuzergahNoktalari
+                .AsNoTracking()
+                .Where(x =>
+                    x.ShapeId == sefer.ShapeId &&
+                    x.Kaynak == "KentKart-Kocaeli" &&
+                    x.Aktif)
+                .OrderBy(x => x.Sira)
+                .Select(x => new
+                {
+                    x.Sira,
+                    enlem = x.Enlem,
+                    boylam = x.Boylam,
+                    mesafe = x.Mesafe
+                })
+                .ToListAsync();
 
         return Ok(new
         {
-            message = "Kocaeli sefer aktarımı tamamlandı.",
-            eklenenSeferSayisi = eklenen
+            seferKodu = sefer.SeferKodu,
+            hatKodu = sefer.HatKodu,
+            shapeId = sefer.ShapeId,
+            noktaSayisi = noktalar.Count,
+            noktalar
         });
     }
-    catch (DirectoryNotFoundException ex)
-    {
-        return NotFound(new
-        {
-            message = ex.Message
-        });
-    }
-    catch (FileNotFoundException ex)
-    {
-        return NotFound(new
-        {
-            message = ex.Message,
-            dosya = ex.FileName
-        });
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, new
-        {
-            message = "Kocaeli sefer aktarımı sırasında hata oluştu.",
-            detay = ex.Message
-        });
-    }
-    
 
-    
-}
+    // ============================================================
+    // KOCAELİ GTFS - SEFER DURAKLARI
+    // ============================================================
 
+    [HttpPost("import/kocaeli/sefer-duraklari")]
+    public async Task<IActionResult> ImportKocaeliSeferDuraklari(
+        [FromQuery] string gtfsKlasoru)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(gtfsKlasoru))
+            {
+                return BadRequest(new
+                {
+                    message = "GTFS klasör yolu belirtilmelidir."
+                });
+            }
+
+            var eklenen =
+                await _kocaeliGtfsService
+                    .SeferDuraklariniAktarAsync(
+                        gtfsKlasoru);
+
+            return Ok(new
+            {
+                message =
+                    "Kocaeli sefer-durak aktarımı tamamlandı.",
+
+                eklenenSeferDurakSayisi =
+                    eklenen
+            });
+        }
+        catch (DirectoryNotFoundException ex)
+        {
+            return NotFound(new
+            {
+                message = ex.Message
+            });
+        }
+        catch (FileNotFoundException ex)
+        {
+            return NotFound(new
+            {
+                message = ex.Message,
+                dosya = ex.FileName
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                message =
+                    "Sefer-durak aktarımı sırasında hata oluştu.",
+
+                detay = ex.Message
+            });
+        }
+    }
+
+    // ============================================================
+    // KOCAELİ GTFS - SEFERLER
+    // ============================================================
+
+    [HttpPost("import/kocaeli/seferler")]
+    public async Task<IActionResult> ImportKocaeliSeferler(
+        [FromQuery] string gtfsKlasoru)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(gtfsKlasoru))
+            {
+                return BadRequest(new
+                {
+                    message = "GTFS klasör yolu belirtilmelidir."
+                });
+            }
+
+            var eklenen =
+                await _kocaeliGtfsService
+                    .SeferleriAktarAsync(gtfsKlasoru);
+
+            return Ok(new
+            {
+                message =
+                    "Kocaeli sefer aktarımı tamamlandı.",
+
+                eklenenSeferSayisi =
+                    eklenen
+            });
+        }
+        catch (DirectoryNotFoundException ex)
+        {
+            return NotFound(new
+            {
+                message = ex.Message
+            });
+        }
+        catch (FileNotFoundException ex)
+        {
+            return NotFound(new
+            {
+                message = ex.Message,
+                dosya = ex.FileName
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                message =
+                    "Kocaeli sefer aktarımı sırasında hata oluştu.",
+
+                detay = ex.Message
+            });
+        }
+    }
 
     // ============================================================
     // DURAK SAYISI
@@ -558,7 +605,8 @@ public async Task<IActionResult> ImportKocaeliSeferler(
     [HttpGet("sayisi")]
     public async Task<IActionResult> GetCount()
     {
-        var sayi = await _context.Duraklar.CountAsync();
+        var sayi =
+            await _context.Duraklar.CountAsync();
 
         return Ok(new
         {
