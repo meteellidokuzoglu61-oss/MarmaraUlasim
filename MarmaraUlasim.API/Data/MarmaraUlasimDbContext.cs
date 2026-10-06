@@ -17,11 +17,16 @@ public class MarmaraUlasimDbContext : DbContext
 
     public DbSet<Mahalle> Mahalleler => Set<Mahalle>();
 
+    public DbSet<Durak> Duraklar => Set<Durak>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // İl - İlçe ilişkisi
+        // ============================================================
+        // İL - İLÇE
+        // ============================================================
+
         modelBuilder.Entity<Ilce>()
             .HasOne(x => x.Il)
             .WithMany()
@@ -33,7 +38,11 @@ public class MarmaraUlasimDbContext : DbContext
             .HasIndex(x => x.ApiId)
             .IsUnique();
 
-        // İlçe - Mahalle ilişkisi
+
+        // ============================================================
+        // İLÇE - MAHALLE
+        // ============================================================
+
         modelBuilder.Entity<Mahalle>()
             .HasOne(x => x.Ilce)
             .WithMany()
@@ -45,7 +54,43 @@ public class MarmaraUlasimDbContext : DbContext
             .HasIndex(x => x.ApiId)
             .IsUnique();
 
-        // Marmara Bölgesi illeri
+
+        // ============================================================
+        // İLÇE - DURAK
+        // ============================================================
+
+        modelBuilder.Entity<Durak>()
+            .HasOne(x => x.Ilce)
+            .WithMany()
+            .HasForeignKey(x => x.IlceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+
+        // ============================================================
+        // MAHALLE - DURAK
+        // ============================================================
+
+        modelBuilder.Entity<Durak>()
+            .HasOne(x => x.Mahalle)
+            .WithMany()
+            .HasForeignKey(x => x.MahalleId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+
+        // Durak kodu benzersiz olsun
+        modelBuilder.Entity<Durak>()
+    .HasIndex(x => new
+    {
+        x.Kaynak,
+        x.DurakKodu
+    })
+    .IsUnique();
+
+
+        // ============================================================
+        // MARMARA BÖLGESİ İLLERİ
+        // ============================================================
+
         modelBuilder.Entity<Il>().HasData(
             new Il { Id = 1, Ad = "İstanbul", PlakaKodu = 34 },
             new Il { Id = 2, Ad = "Edirne", PlakaKodu = 22 },

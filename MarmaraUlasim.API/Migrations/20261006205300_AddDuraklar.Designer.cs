@@ -2,6 +2,7 @@
 using MarmaraUlasim.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MarmaraUlasim.API.Migrations
 {
     [DbContext(typeof(MarmaraUlasimDbContext))]
-    partial class MarmaraUlasimDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261006205300_AddDuraklar")]
+    partial class AddDuraklar
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,21 +52,17 @@ namespace MarmaraUlasim.API.Migrations
                     b.Property<int>("IlceId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Kaynak")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<int?>("MahalleId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DurakKodu")
+                        .IsUnique();
+
                     b.HasIndex("IlceId");
 
                     b.HasIndex("MahalleId");
-
-                    b.HasIndex("Kaynak", "DurakKodu")
-                        .IsUnique();
 
                     b.ToTable("Duraklar");
                 });
