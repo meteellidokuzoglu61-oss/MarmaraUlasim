@@ -1,10 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using MarmaraUlasim.API.Data;
+using MarmaraUlasim.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Controllers
 builder.Services.AddControllers();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<TurkiyeApiService>();
 
 // PostgreSQL
 builder.Services.AddDbContext<MarmaraUlasimDbContext>(options =>
