@@ -15,6 +15,8 @@ public class MarmaraUlasimDbContext : DbContext
 
     public DbSet<Ilce> Ilceler => Set<Ilce>();
 
+    public DbSet<Mahalle> Mahalleler => Set<Mahalle>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -28,6 +30,18 @@ public class MarmaraUlasimDbContext : DbContext
 
         // TurkiyeAPI ilçe ID'si benzersiz olsun
         modelBuilder.Entity<Ilce>()
+            .HasIndex(x => x.ApiId)
+            .IsUnique();
+
+        // İlçe - Mahalle ilişkisi
+        modelBuilder.Entity<Mahalle>()
+            .HasOne(x => x.Ilce)
+            .WithMany()
+            .HasForeignKey(x => x.IlceId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // TurkiyeAPI mahalle ID'si benzersiz olsun
+        modelBuilder.Entity<Mahalle>()
             .HasIndex(x => x.ApiId)
             .IsUnique();
 
