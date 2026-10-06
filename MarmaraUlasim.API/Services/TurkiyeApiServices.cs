@@ -21,78 +21,98 @@ public class TurkiyeApiService
         _context = context;
     }
 
-   public async Task<int> IlceleriAktarAsync()
-{
-    var response =
-        await _httpClient.GetFromJsonAsync<TurkiyeApiResponse>(ApiUrl);
-
-    if (response == null || response.Data == null)
+    public async Task<int> IlceleriAktarAsync()
     {
-        throw new Exception("TurkiyeAPI'den veri alınamadı.");
-    }
+        // TurkiyeAPI'den bütün ilçeleri çek
+        var response =
+            await _httpClient.GetFromJsonAsync<TurkiyeApiResponse>(ApiUrl);
 
-    var marmaraPlakalari = new HashSet<int>
-    {
-        10, 11, 16, 17, 22, 34, 39, 41, 54, 59, 77
-    };
-
-    var toplamKayit = response.Data.Count;
-
-    var marmaraKayitlari = response.Data
-        .Where(x => marmaraPlakalari.Contains(x.ProvinceId))
-        .ToList();
-
-    var iller = await _context.Iller
-        .AsNoTracking()
-        .ToListAsync();
-
-    var ilByPlate = iller.ToDictionary(
-        x => x.PlakaKodu,
-        x => x
-    );
-
-    var eslesenKayitlar = marmaraKayitlari
-        .Where(x => ilByPlate.ContainsKey(x.ProvinceId))
-        .ToList();
-
-    var mevcutApiIdler = await _context.Ilceler
-        .Select(x => x.ApiId)
-        .ToHashSetAsync();
-
-    var yeniIlceler = new List<Ilce>();
-
-    foreach (var dto in eslesenKayitlar)
-    {
-        if (mevcutApiIdler.Contains(dto.Id))
+        if (response == null || response.Data == null)
         {
-            continue;
+            throw new Exception(
+                "TurkiyeAPI'den ilçe verileri alınamadı.");
         }
 
-        var il = ilByPlate[dto.ProvinceId];
-
-        yeniIlceler.Add(new Ilce
+        // Marmara Bölgesi illerinin plaka kodları
+        var marmaraPlakalari = new HashSet<int>
         {
-            ApiId = dto.Id,
-            Ad = dto.Name,
-            IlId = il.Id
-        });
+            10, // Balıkesir
+            11, // Bilecik
+            16, // Bursa
+            17, // Çanakkale
+            22, // Edirne
+            34, // İstanbul
+            39, // Kırklareli
+            41, // Kocaeli
+            54, // Sakarya
+            59, // Tekirdağ
+            77  // Yalova
+        };
 
-        mevcutApiIdler.Add(dto.Id);
+        // PostgreSQL'deki illeri getir
+        var iller = await _context.Iller
+            .AsNoTracking()
+            .ToListAsync();
+
+        // Plaka koduna göre il bul
+        var ilByPlate = iller.ToDictionary(
+            x => x.PlakaKodu,
+            x => x
+        );
+
+        // Daha önce aktarılmış ilçe API ID'lerini getir
+        var mevcutApiIdler = await _context.Ilceler
+            .Select(x => x.ApiId)
+            .ToHashSetAsync();
+
+        var yeniIlceler = new List<Ilce>();
+
+        // TurkiyeAPI'den gelen ilçeleri dolaş
+        foreach (var dto in response.Data)
+        {
+            // Marmara dışındaki illeri atla
+            if (!marmaraPlakalari.Contains(dto.ProvinceId))
+            {
+                continue;
+            }
+
+            // PostgreSQL'de bu ilin karşılığı var mı?
+            if (!ilByPlate.TryGetValue(
+                    dto.ProvinceId,
+                    out var il))
+            {
+                continue;
+            }
+
+            // İlçe zaten varsa tekrar ekleme
+            if (mevcutApiIdler.Contains(dto.Id))
+            {
+                continue;
+            }
+
+            // Yeni ilçe oluştur
+            yeniIlceler.Add(new Ilce
+            {
+                ApiId = dto.Id,
+                Ad = dto.Name,
+                IlId = il.Id
+            });
+
+            // Aynı çalıştırmada tekrar eklenmesini önle
+            mevcutApiIdler.Add(dto.Id);
+        }
+
+        // Yeni ilçeleri PostgreSQL'e kaydet
+        if (yeniIlceler.Count > 0)
+        {
+            await _context.Ilceler.AddRangeAsync(yeniIlceler);
+
+            await _context.SaveChangesAsync();
+        }
+
+        // Kaç yeni ilçe eklendiğini döndür
+        return yeniIlceler.Count;
     }
-
-    if (yeniIlceler.Count > 0)
-    {
-        await _context.Ilceler.AddRangeAsync(yeniIlceler);
-        await _context.SaveChangesAsync();
-    }
-
-    throw new Exception(
-        $"Toplam API kaydı: {toplamKayit} | " +
-        $"Marmara kaydı: {marmaraKayitlari.Count} | " +
-        $"İl ile eşleşen kayıt: {eslesenKayitlar.Count} | " +
-        $"Yeni ilçe: {yeniIlceler.Count}"
-    );
-}
 }
 
 
