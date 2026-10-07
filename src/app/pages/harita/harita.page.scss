@@ -1,63 +1,70 @@
 ion-content {
   --background: #f5f7fa;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --padding-start: 0;
+  --padding-end: 0;
 }
 
 .sayfa {
   width: 100%;
-  min-height: 100%;
+  box-sizing: border-box;
 }
 
 .baslik {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  background: white;
+  padding: 16px;
+  background: #ffffff;
 }
 
 .baslik h1 {
   margin: 0;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
 }
 
 .baslik p {
-  margin: 5px 0 0;
+  margin: 4px 0 0;
+  font-size: 13px;
   color: #777;
 }
 
 .baslik ion-icon {
-  font-size: 32px;
+  font-size: 30px;
 }
 
 .seferler {
-  padding: 15px;
-  background: white;
-  max-height: 280px;
+  padding: 12px;
+  background: #ffffff;
+  max-height: 190px;
   overflow-y: auto;
 }
 
 .sefer-baslik {
-  font-size: 18px;
+  margin-bottom: 8px;
+  font-size: 17px;
   font-weight: 700;
-  margin-bottom: 10px;
 }
 
 .sefer-karti {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  margin-bottom: 8px;
-
+  gap: 10px;
+  padding: 9px;
+  margin-bottom: 6px;
+  box-sizing: border-box;
   border: 1px solid #e0e0e0;
-  border-radius: 10px;
-
-  background: white;
-
+  border-radius: 8px;
+  background: #ffffff;
   text-align: left;
   cursor: pointer;
+}
+
+.sefer-karti:last-child {
+  margin-bottom: 0;
 }
 
 .sefer-karti.secili {
@@ -66,48 +73,83 @@ ion-content {
 }
 
 .hat-kodu {
-  min-width: 65px;
-
-  padding: 8px;
-
-  border-radius: 8px;
-
+  min-width: 55px;
+  padding: 6px 8px;
+  border-radius: 7px;
   background: #3880ff;
-  color: white;
-
+  color: #ffffff;
+  font-size: 13px;
   font-weight: 700;
   text-align: center;
 }
 
 .sefer-bilgi {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+}
+
+.sefer-bilgi strong {
+  font-size: 14px;
 }
 
 .sefer-bilgi span {
-  font-size: 13px;
+  font-size: 12px;
   color: #777;
 }
 
 .harita {
   width: 100%;
-  height: 600px;
-  min-height: 600px;
+  height: 420px;
   display: block;
+  box-sizing: border-box;
+  background: #dfe5e8;
+  overflow: hidden;
+}
+
+.harita :global(.leaflet-container) {
+  width: 100%;
+  height: 100%;
 }
 
 .durum {
-  padding: 10px;
+  padding: 8px;
+  font-size: 13px;
   color: #666;
 }
 
 .hata {
-  padding: 10px;
-  margin-bottom: 10px;
-
-  border-radius: 8px;
-
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 7px;
   background: #ffecec;
   color: #c62828;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .baslik {
+    padding: 14px;
+  }
+
+  .baslik h1 {
+    font-size: 20px;
+  }
+
+  .baslik p {
+    font-size: 12px;
+  }
+
+  .baslik ion-icon {
+    font-size: 27px;
+  }
+
+  .seferler {
+    max-height: 160px;
+  }
+
+  .harita {
+    height: 350px;
+  }
 }
