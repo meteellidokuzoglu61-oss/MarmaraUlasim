@@ -1,13 +1,47 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>il-detay</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/iller"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ il?.ad || 'İl Detayı' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">il-detay</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <div class="page-container">
+    <div *ngIf="yukleniyor" class="durum">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>İl bilgileri yükleniyor...</p>
+    </div>
+
+    <ion-text color="danger" *ngIf="hata">
+      <p>{{ hata }}</p>
+    </ion-text>
+
+    <ng-container *ngIf="il && !yukleniyor">
+      <div class="hero">
+        <div>
+          <span>PLAKA {{ il.plakaKodu }}</span>
+          <h1>{{ il.ad }}</h1>
+          <p>{{ il.ilceler.length }} ilçe</p>
+        </div>
+      </div>
+
+      <div class="baslik">
+        <h2>İlçeler</h2>
+        <ion-badge color="primary">{{ il.ilceler.length }}</ion-badge>
+      </div>
+
+      <ion-list>
+        <ion-item button *ngFor="let ilce of il.ilceler"
+          (click)="duraklariAc(ilce.id)">
+          <ion-label>
+            <h2>{{ ilce.ad }}</h2>
+            <p>{{ ilce.mahalleSayisi }} mahalle · {{ ilce.durakSayisi }} durak</p>
+          </ion-label>
+          <ion-badge slot="end" color="light">{{ ilce.durakSayisi }}</ion-badge>
+        </ion-item>
+      </ion-list>
+    </ng-container>
+  </div>
 </ion-content>
