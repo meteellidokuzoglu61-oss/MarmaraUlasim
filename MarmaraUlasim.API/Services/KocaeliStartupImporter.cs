@@ -1,4 +1,6 @@
 using System.IO.Compression;
+using MarmaraUlasim.API.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace MarmaraUlasim.API.Services;
 
