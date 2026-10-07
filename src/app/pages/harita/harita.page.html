@@ -1,108 +1,61 @@
-```html
 <ion-header>
   <ion-toolbar>
-
     <ion-title>
       Marmara Ulaşım
     </ion-title>
-
     <ion-buttons slot="end">
-
-      <ion-button
-        (click)="yenidenYukle()"
-        [disabled]="yukleniyor">
-
-        <ion-icon
-          slot="icon-only"
-          name="refresh-outline">
-        </ion-icon>
-
+      <ion-button (click)="yenidenYukle()" [disabled]="yukleniyor">
+        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
       </ion-button>
-
     </ion-buttons>
-
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-
   <div class="sayfa">
-
     <div class="baslik">
       <div>
         <h1>Hat Haritası</h1>
-
-        <p>
-          Kocaeli gerçek GTFS verileri
-        </p>
+        <p>Kocaeli gerçek GTFS verileri</p>
       </div>
-
       <ion-icon name="map-outline"></ion-icon>
     </div>
 
     <div class="seferler">
-
       <div class="sefer-baslik">
         Seferler
       </div>
 
       @if (yukleniyor) {
-
         <div class="durum">
           Veriler yükleniyor...
         </div>
-
       }
 
       @if (hata) {
-
         <div class="hata">
           {{ hata }}
         </div>
-
       }
 
       @for (sefer of seferler; track sefer.id) {
-
         <button
           class="sefer-karti"
-          [class.secili]="
-            seciliSefer?.id === sefer.id
-          "
+          [class.secili]="seciliSefer?.id === sefer.id"
           (click)="seferSec(sefer)">
-
           <div class="hat-kodu">
             {{ sefer.hatKodu }}
           </div>
-
           <div class="sefer-bilgi">
-
-            <strong>
-              Sefer: {{ sefer.seferKodu }}
-            </strong>
-
+            <strong>Sefer: {{ sefer.seferKodu }}</strong>
             @if (sefer.varisYonu) {
-
-              <span>
-                {{ sefer.varisYonu }}
-              </span>
-
+              <span>{{ sefer.varisYonu }}</span>
             }
-
           </div>
-
         </button>
-
       }
-
     </div>
 
-    <div
-      id="harita"
-      class="harita">
-    </div>
-
+    <div id="harita" class="harita"></div>
   </div>
-
 </ion-content>
-```

@@ -90,11 +90,17 @@ export class HaritaPage implements AfterViewInit, OnDestroy {
         attribution: '&copy; OpenStreetMap'
       }
     ).addTo(this.map);
+
+    // Leaflet'in kapsayıcı boyutlarını yeniden hesaplamasını zorluyoruz
+    setTimeout(() => {
+      this.map.invalidateSize();
+    }, 200);
   }
 
   seferleriGetir(): void {
     this.yukleniyor = true;
     this.hata = '';
+    // ... kodun geri kalanı aynı şekilde devam ediyor
 
     this.api.getSeferler(1, 50).subscribe({
       next: (sonuc) => {
