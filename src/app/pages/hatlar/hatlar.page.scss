@@ -1,21 +1,45 @@
+ion-content { --background: #f5f7fb; }
+
 .page-container {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 18px 16px 40px;
 }
 
 ion-searchbar {
   padding: 0 0 14px;
+  --background: #fff;
+  --border-radius: 14px;
+  --box-shadow: 0 4px 16px rgba(20, 40, 80, .06);
 }
 
 ion-list {
+  margin-top: 4px;
   border-radius: 16px;
   overflow: hidden;
+  background: #fff;
+  box-shadow: 0 4px 18px rgba(20, 40, 80, .05);
+}
+
+ion-item {
+  --padding-start: 16px;
+  --inner-padding-end: 8px;
+  --min-height: 74px;
+}
+
+ion-item h2 {
+  font-weight: 700;
+  color: #17233c;
+}
+
+ion-item p {
+  color: #718096;
 }
 
 .durum, .bos {
   text-align: center;
-  padding: 40px 16px;
+  padding: 50px 16px;
+  color: #64748b;
 }
 
 .durum ion-spinner {
