@@ -1,87 +1,73 @@
-
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>
-      Marmara Ulaşım
-    </ion-title>
+    <ion-title>Marmara Ulaşım</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-
   <section class="hero">
     <div class="hero-content">
       <span class="eyebrow">MARMARA BÖLGESİ</span>
-
       <h1>Yolculuğun<br>buradan başlar.</h1>
-
-      <p style="display: flex; text-decoration-line: overline;">
-        Marmara Bölgesi'ndeki ulaşım seçeneklerini
-        tek bir noktadan keşfedin.
-      </p>
+      <p>Marmara Bölgesi'ndeki ulaşım seçeneklerini tek bir noktadan keşfedin.</p>
     </div>
   </section>
 
   <div class="main-container">
-
     <section class="search-card">
       <h2>Nereye gitmek istiyorsun?</h2>
 
       <div class="input-group">
         <label for="from">Nereden?</label>
-        <input
-          id="from"
-          type="text"
-          placeholder="Başlangıç noktası"
-        />
+        <input id="from" type="text" placeholder="Başlangıç noktası" />
       </div>
 
       <div class="input-group">
         <label for="to">Nereye?</label>
-        <input
-          id="to"
-          type="text"
-          placeholder="Varış noktası"
-        />
+        <input id="to" type="text" placeholder="Varış noktası" />
       </div>
 
-      <button class="search-button">
-        Rota Ara
-      </button>
+      <button class="search-button" routerLink="/harita">Haritada Gör</button>
     </section>
 
     <section class="transport-section">
       <h2>Ulaşım seçenekleri</h2>
 
       <div class="transport-grid">
-        <div class="transport-card">
+        <div class="transport-card" routerLink="/hatlar">
           <span class="transport-icon">🚌</span>
-          <h3>Otobüs</h3>
-          <p>Şehir içi ve şehirler arası</p>
+          <h3>Otobüs Hatları</h3>
+          <p>Aktif hatları ve hat kodlarını incele.</p>
         </div>
 
-        <div class="transport-card">
-          <span class="transport-icon">🚆</span>
-          <h3>Tren</h3>
-          <p>Raylı sistemler</p>
+        <div class="transport-card" routerLink="/duraklar">
+          <span class="transport-icon">📍</span>
+          <h3>Duraklar</h3>
+          <p>Durakları ara ve favorilerine ekle.</p>
         </div>
 
-        <div class="transport-card">
-          <span class="transport-icon">⛴️</span>
-          <h3>Feribot</h3>
-          <p>Deniz ulaşımı</p>
+        <div class="transport-card" routerLink="/harita">
+          <span class="transport-icon">🗺️</span>
+          <h3>Harita</h3>
+          <p>Mevcut güzergahları harita üzerinde gör.</p>
         </div>
 
-        <div class="transport-card">
-          <span class="transport-icon">🚇</span>
-          <h3>Metro</h3>
-          <p>Hızlı şehir ulaşımı</p>
+        <div class="transport-card" routerLink="/favoriler">
+          <span class="transport-icon">❤️</span>
+          <h3>Favoriler</h3>
+          <p>Kaydettiğin hat ve duraklara ulaş.</p>
         </div>
       </div>
     </section>
 
     <section class="cities-section">
-      <h2>Marmara'nın 11 şehri</h2>
+      <div class="bolum-baslik">
+        <div>
+          <h2>Marmara'nın 11 şehri</h2>
+          <p>İlçe ve mahalle verilerini incelemek için iller ekranına geç.</p>
+        </div>
+        <button class="link-button" routerLink="/iller">İlleri Aç</button>
+      </div>
 
       <div class="city-list">
         <span>İstanbul</span>
@@ -97,7 +83,5 @@
         <span>Bilecik</span>
       </div>
     </section>
-
   </div>
-
 </ion-content>
