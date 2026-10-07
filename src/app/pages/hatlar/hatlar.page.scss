@@ -1,0 +1,23 @@
+.page-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+ion-searchbar {
+  padding: 0 0 14px;
+}
+
+ion-list {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.durum, .bos {
+  text-align: center;
+  padding: 40px 16px;
+}
+
+.durum ion-spinner {
+  font-size: 30px;
+}
