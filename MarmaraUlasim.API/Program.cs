@@ -10,6 +10,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddScoped<TurkiyeApiService>();
 builder.Services.AddScoped<KocaeliGtfsService>();
 builder.Services.AddHostedService<MarmaraStartupSeeder>();
+builder.Services.AddHostedService<KocaeliStartupImporter>();
 
 // PostgreSQL
 builder.Services.AddDbContext<MarmaraUlasimDbContext>(options =>
