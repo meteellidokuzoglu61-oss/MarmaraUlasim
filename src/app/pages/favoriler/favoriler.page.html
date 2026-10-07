@@ -1,13 +1,35 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>favoriler</ion-title>
+    <ion-title>Favoriler</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">favoriler</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <div class="page-container">
+    <div class="baslik">
+      <div>
+        <h1>Favorilerin</h1>
+        <p>Kaydettiğin hat ve duraklar burada.</p>
+      </div>
+      <ion-icon name="heart"></ion-icon>
+    </div>
+
+    <ion-list *ngIf="favoriler.length > 0">
+      <ion-item *ngFor="let favori of favoriler">
+        <ion-label>
+          <h2>{{ favori.ad }}</h2>
+          <p>{{ favori.tur === 'hat' ? 'Hat' : 'Durak' }} · {{ favori.kod }}</p>
+        </ion-label>
+        <ion-button fill="clear" color="danger" slot="end" (click)="sil(favori)">
+          <ion-icon name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-list>
+
+    <div class="bos" *ngIf="favoriler.length === 0">
+      <ion-icon name="heart"></ion-icon>
+      <h2>Henüz favori yok</h2>
+      <p>Hatlar veya duraklar sayfasından kalp simgesine dokun.</p>
+    </div>
+  </div>
 </ion-content>
