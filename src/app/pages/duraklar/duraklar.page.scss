@@ -1,0 +1,37 @@
+.page-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+ion-searchbar {
+  padding: 0 0 14px;
+}
+
+.ozet {
+  padding: 8px 4px 14px;
+  color: #64748b;
+}
+
+.ozet strong {
+  color: #123b70;
+}
+
+ion-list {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+ion-item {
+  --padding-start: 14px;
+  --inner-padding-end: 6px;
+}
+
+.durum, .bos {
+  text-align: center;
+  padding: 40px 16px;
+}
+
+.durum ion-spinner {
+  font-size: 30px;
+}
