@@ -28,7 +28,7 @@ public class IllerController : ControllerBase
                 ilceSayisi = _context.Ilceler.Count(i => i.IlId == x.Id),
                 durakSayisi = _context.Duraklar.Count(d => d.Ilce != null && d.Ilce.IlId == x.Id && d.Aktif)
             })
-            .OrderBy(x => x.Ad)
+            .OrderBy(x => x.ad)
             .ToListAsync();
 
         return Ok(iller);
