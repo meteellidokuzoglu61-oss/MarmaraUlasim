@@ -1,25 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
-  IonIcon,
-  IonSearchbar,
-  IonBadge,
-  IonCard,
-  IonCardContent
+  IonHeader, IonToolbar, IonTitle, IonContent, IonIcon,
+  IonSearchbar, IonBadge, IonCard, IonCardContent,
+  IonSpinner, IonText
 } from '@ionic/angular';
-
-interface City {
-  id: number;
-  name: string;
-  districtCount: number;
-}
+import { addIcons } from 'ionicons';
+import { mapOutline, businessOutline, chevronForwardOutline, searchOutline } from 'ionicons/icons';
+import { Il, IlService } from '../../services/il.service';
 
 @Component({
   selector: 'app-iller',
@@ -27,43 +17,60 @@ interface City {
   styleUrls: ['./iller.page.scss'],
   standalone: true,
   imports: [
-    CommonModule,
-    FormsModule,
-
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonContent,
-    IonIcon,
-    IonSearchbar,
-    IonBadge,
-    IonCard,
-    IonCardContent
+    CommonModule, FormsModule, IonHeader, IonToolbar, IonTitle,
+    IonContent, IonIcon, IonSearchbar, IonBadge, IonCard,
+    IonCardContent, IonSpinner, IonText
   ]
 })
-export class IllerPage {
-
+export class IllerPage implements OnInit {
   searchText = '';
+  cities: Il[] = [];
+  filteredCities: Il[] = [];
+  yukleniyor = true;
+  hata = '';
 
-  cities: City[] = [];
+  constructor(
+    private readonly router: Router,
+    private readonly ilService: IlService
+  ) {
+    addIcons({
+      mapOutline,
+      businessOutline,
+      chevronForwardOutline,
+      searchOutline
+    });
+  }
 
-  filteredCities: City[] = [];
+  ngOnInit(): void {
+    this.illeriGetir();
+  }
 
-  constructor(private router: Router) {}
+  illeriGetir(): void {
+    this.yukleniyor = true;
+    this.hata = '';
 
-  searchCities() {
-    const search = this.searchText
-      .toLocaleLowerCase('tr-TR')
-      .trim();
+    this.ilService.getIller().subscribe({
+      next: iller => {
+        this.cities = iller;
+        this.filteredCities = iller;
+        this.yukleniyor = false;
+      },
+      error: error => {
+        console.error('İller alınamadı:', error);
+        this.hata = 'İller yüklenirken bir hata oluştu.';
+        this.yukleniyor = false;
+      }
+    });
+  }
 
+  searchCities(): void {
+    const search = this.searchText.toLocaleLowerCase('tr-TR').trim();
     this.filteredCities = this.cities.filter(city =>
-      city.name
-        .toLocaleLowerCase('tr-TR')
-        .includes(search)
+      city.ad.toLocaleLowerCase('tr-TR').includes(search)
     );
   }
 
-  openCity(id: number) {
+  openCity(id: number): void {
     this.router.navigate(['/il-detay', id]);
   }
 }
