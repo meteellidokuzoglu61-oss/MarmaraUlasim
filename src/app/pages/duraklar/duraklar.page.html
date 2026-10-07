@@ -1,18 +1,23 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
     <ion-title>Duraklar</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Duraklar</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <div class="page-container">
+    <ion-searchbar
+      placeholder="Durak adı veya kodu ara..."
+      [(ngModel)]="arama"
+      (ionInput)="duraklariGetir()"
+      debounce="400">
+    </ion-searchbar>
 
-  <div class="ion-padding">
-    <div *ngIf="yukleniyor" class="ion-text-center">
+    <div class="ozet" *ngIf="!yukleniyor">
+      <strong>{{ toplam }}</strong> aktif durak
+    </div>
+
+    <div *ngIf="yukleniyor" class="durum">
       <ion-spinner name="crescent"></ion-spinner>
       <p>Duraklar yükleniyor...</p>
     </div>
@@ -25,17 +30,19 @@
       <ion-item *ngFor="let durak of duraklar">
         <ion-label>
           <h2>{{ durak.ad }}</h2>
-          <p>Kod: {{ durak.durakKodu }}</p>
-          <p *ngIf="durak.ilce">İlçe: {{ durak.ilce.ad }}</p>
-          <p *ngIf="durak.mahalle">Mahalle: {{ durak.mahalle.ad }}</p>
-          <p>Konum: {{ durak.enlem }}, {{ durak.boylam }}</p>
-          <p>Kaynak: {{ durak.kaynak }}</p>
+          <p>{{ durak.durakKodu }} · {{ durak.ilce || 'İlçe bilgisi yok' }}</p>
+          <p *ngIf="durak.mahalle">{{ durak.mahalle }}</p>
+          <p>{{ durak.enlem | number:'1.5-5' }}, {{ durak.boylam | number:'1.5-5' }}</p>
         </ion-label>
+        <ion-button fill="clear" slot="end" (click)="favoriDegistir(durak)">
+          <ion-icon [name]="favoriMi(durak) ? 'heart' : 'heart-outline'"></ion-icon>
+        </ion-button>
       </ion-item>
     </ion-list>
 
-    <ion-text *ngIf="!yukleniyor && !hata && duraklar.length === 0">
-      <p>Henüz kayıtlı aktif durak bulunamadı.</p>
-    </ion-text>
+    <div class="bos" *ngIf="!yukleniyor && !hata && duraklar.length === 0">
+      <h3>Durak bulunamadı</h3>
+      <p>Arama kriterini değiştir veya veri kaynağını kontrol et.</p>
+    </div>
   </div>
 </ion-content>
