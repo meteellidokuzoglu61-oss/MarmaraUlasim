@@ -15,6 +15,7 @@ import {
 } from '@ionic/angular';
 
 import { addIcons } from 'ionicons';
+
 import {
   mapOutline,
   refreshOutline
@@ -45,7 +46,7 @@ import {
 })
 export class HaritaPage implements AfterViewInit, OnDestroy {
 
-  private map!: L.Map;
+  private map?: L.Map;
 
   private guzergahCizgisi?: L.Polyline;
 
@@ -67,40 +68,47 @@ export class HaritaPage implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.haritaOlustur();
-    this.seferleriGetir();
+    setTimeout(() => {
+      this.haritaOlustur();
+      this.seferleriGetir();
+    }, 100);
   }
 
   ngOnDestroy(): void {
-    if (this.map) {
-      this.map.remove();
-    }
+    this.map?.remove();
+    this.map = undefined;
   }
 
   private haritaOlustur(): void {
-    this.map = L.map('harita', {
+    const element = document.getElementById('harita');
+
+    if (!element) {
+      this.hata = 'Harita alanı oluşturulamadı.';
+      return;
+    }
+
+    this.map = L.map(element, {
       center: [40.765, 29.940],
-      zoom: 11
+      zoom: 11,
+      zoomControl: true
     });
 
     L.tileLayer(
       'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       {
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap'
+        attribution: '&copy; OpenStreetMap contributors'
       }
     ).addTo(this.map);
 
-    // Leaflet'in kapsayıcı boyutlarını yeniden hesaplamasını zorluyoruz
     setTimeout(() => {
-      this.map.invalidateSize();
-    }, 200);
+      this.map?.invalidateSize();
+    }, 300);
   }
 
   seferleriGetir(): void {
     this.yukleniyor = true;
     this.hata = '';
-    // ... kodun geri kalanı aynı şekilde devam ediyor
 
     this.api.getSeferler(1, 50).subscribe({
       next: (sonuc) => {
@@ -113,14 +121,8 @@ export class HaritaPage implements AfterViewInit, OnDestroy {
       },
 
       error: (error) => {
-        console.error(
-          'Seferler alınamadı:',
-          error
-        );
-
-        this.hata =
-          'Seferler API üzerinden alınamadı.';
-
+        console.error('Seferler alınamadı:', error);
+        this.hata = 'Seferler API üzerinden alınamadı.';
         this.yukleniyor = false;
       }
     });
@@ -129,7 +131,7 @@ export class HaritaPage implements AfterViewInit, OnDestroy {
   seferSec(sefer: Sefer): void {
     this.seciliSefer = sefer;
 
-    if (!sefer.seferKodu) {
+    if (!sefer.seferKodu || !this.map) {
       return;
     }
 
@@ -142,17 +144,15 @@ export class HaritaPage implements AfterViewInit, OnDestroy {
         next: (sonuc) => {
           this.guzergahiHaritadaGoster(sonuc);
           this.yukleniyor = false;
+
+          setTimeout(() => {
+            this.map?.invalidateSize();
+          }, 100);
         },
 
         error: (error) => {
-          console.error(
-            'Güzergâh alınamadı:',
-            error
-          );
-
-          this.hata =
-            'Sefer güzergâhı alınamadı.';
-
+          console.error('Güzergâh alınamadı:', error);
+          this.hata = 'Sefer güzergâhı alınamadı.';
           this.yukleniyor = false;
         }
       });
@@ -161,6 +161,9 @@ export class HaritaPage implements AfterViewInit, OnDestroy {
   private guzergahiHaritadaGoster(
     guzergah: SeferGuzergahi
   ): void {
+    if (!this.map) {
+      return;
+    }
 
     if (
       !guzergah.noktalar ||
@@ -168,41 +171,42 @@ export class HaritaPage implements AfterViewInit, OnDestroy {
     ) {
       this.hata =
         'Bu sefer için güzergâh noktası bulunamadı.';
-
       return;
     }
 
     if (this.guzergahCizgisi) {
-      this.map.removeLayer(
-        this.guzergahCizgisi
-      );
+      this.map.removeLayer(this.guzergahCizgisi);
     }
 
     const koordinatlar: L.LatLngExpression[] =
-      guzergah.noktalar.map(
-        nokta => [
-          nokta.enlem,
-          nokta.boylam
-        ]
-      );
+      guzergah.noktalar.map((nokta) => [
+        nokta.enlem,
+        nokta.boylam
+      ]);
 
-    this.guzergahCizgisi =
-      L.polyline(
-        koordinatlar,
-        {
-          weight: 5
-        }
-      ).addTo(this.map);
+    this.guzergahCizgisi = L.polyline(
+      koordinatlar,
+      {
+        weight: 5,
+        opacity: 0.9
+      }
+    ).addTo(this.map);
 
     this.map.fitBounds(
       this.guzergahCizgisi.getBounds(),
       {
-        padding: [30, 30]
+        padding: [25, 25]
       }
     );
   }
 
   yenidenYukle(): void {
+    if (this.guzergahCizgisi && this.map) {
+      this.map.removeLayer(this.guzergahCizgisi);
+      this.guzergahCizgisi = undefined;
+    }
+
+    this.seciliSefer = null;
     this.seferleriGetir();
   }
 }
