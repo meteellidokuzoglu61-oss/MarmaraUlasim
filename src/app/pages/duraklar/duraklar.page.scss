@@ -1,35 +1,57 @@
+ion-content { --background: #f5f7fb; }
+
 .page-container {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 18px 16px 40px;
 }
 
 ion-searchbar {
-  padding: 0 0 14px;
+  padding: 0 0 12px;
+  --background: #fff;
+  --border-radius: 14px;
+  --box-shadow: 0 4px 16px rgba(20, 40, 80, .06);
 }
 
 .ozet {
-  padding: 8px 4px 14px;
+  margin: 2px 0 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #eaf2ff;
   color: #64748b;
 }
 
 .ozet strong {
   color: #123b70;
+  font-size: 17px;
 }
 
 ion-list {
   border-radius: 16px;
   overflow: hidden;
+  background: #fff;
+  box-shadow: 0 4px 18px rgba(20, 40, 80, .05);
 }
 
 ion-item {
   --padding-start: 14px;
   --inner-padding-end: 6px;
+  --min-height: 76px;
+}
+
+ion-item h2 {
+  font-weight: 700;
+  color: #17233c;
+}
+
+ion-item p {
+  color: #718096;
 }
 
 .durum, .bos {
   text-align: center;
-  padding: 40px 16px;
+  padding: 50px 16px;
+  color: #64748b;
 }
 
 .durum ion-spinner {
