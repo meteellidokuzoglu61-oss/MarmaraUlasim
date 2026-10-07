@@ -1,18 +1,19 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
     <ion-title>Hatlar</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Hatlar</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <div class="page-container">
+    <ion-searchbar
+      placeholder="Hat kodu veya adı ara..."
+      [(ngModel)]="arama"
+      (ionInput)="filtrele()"
+      debounce="250">
+    </ion-searchbar>
 
-  <div class="ion-padding">
-    <div *ngIf="yukleniyor" class="ion-text-center">
+    <div *ngIf="yukleniyor" class="durum">
       <ion-spinner name="crescent"></ion-spinner>
       <p>Hatlar yükleniyor...</p>
     </div>
@@ -22,17 +23,21 @@
     </ion-text>
 
     <ion-list *ngIf="!yukleniyor && !hata">
-      <ion-item *ngFor="let hat of hatlar">
+      <ion-item *ngFor="let hat of filtreliHatlar">
         <ion-label>
-          <h2>{{ hat.hatKodu }} - {{ hat.ad }}</h2>
+          <h2>{{ hat.hatKodu }} · {{ hat.ad }}</h2>
           <p *ngIf="hat.aciklama">{{ hat.aciklama }}</p>
-          <p>Kaynak: {{ hat.kaynak }}</p>
+          <p>{{ hat.kaynak }} <span *ngIf="hat.tip">· Tip {{ hat.tip }}</span></p>
         </ion-label>
+        <ion-button fill="clear" slot="end" (click)="favoriDegistir(hat)">
+          <ion-icon [name]="favoriMi(hat) ? 'heart' : 'heart-outline'"></ion-icon>
+        </ion-button>
       </ion-item>
     </ion-list>
 
-    <ion-text *ngIf="!yukleniyor && !hata && hatlar.length === 0">
-      <p>Henüz kayıtlı aktif hat bulunamadı.</p>
-    </ion-text>
+    <div class="bos" *ngIf="!yukleniyor && !hata && filtreliHatlar.length === 0">
+      <h3>Hat bulunamadı</h3>
+      <p>Arama kriterini değiştir veya veri kaynağını kontrol et.</p>
+    </div>
   </div>
 </ion-content>
