@@ -1,4 +1,3 @@
-
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>Marmara Ulaşım</ion-title>
@@ -6,78 +5,61 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="iller-content">
-
   <div class="page-container">
-
     <div class="welcome-section">
       <div class="welcome-icon">
         <ion-icon name="map-outline"></ion-icon>
       </div>
-
       <h1>Marmara Bölgesi</h1>
-
-      <p>
-        Şehrini seç, ulaşım seçeneklerini keşfet.
-      </p>
+      <p>Şehrini seç, ulaşım seçeneklerini keşfet.</p>
     </div>
 
-    <div class="search-section">
-      <ion-searchbar
-        placeholder="İl ara..."
-        [(ngModel)]="searchText"
-        (ionInput)="searchCities()"
-        animated="true"
-        debounce="300">
-      </ion-searchbar>
+    <ion-searchbar
+      placeholder="İl ara..."
+      [(ngModel)]="searchText"
+      (ionInput)="searchCities()"
+      animated="true"
+      debounce="300">
+    </ion-searchbar>
+
+    <div *ngIf="yukleniyor" class="durum">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>İller yükleniyor...</p>
     </div>
 
-    <div class="section-heading">
+    <ion-text color="danger" *ngIf="hata">
+      <p>{{ hata }}</p>
+    </ion-text>
+
+    <div class="section-heading" *ngIf="!yukleniyor && !hata">
       <div>
         <h2>İller</h2>
         <p>Bölgedeki şehirleri keşfet</p>
       </div>
-
-      <ion-badge color="primary">
-        {{ filteredCities.length }} il
-      </ion-badge>
+      <ion-badge color="primary">{{ filteredCities.length }} il</ion-badge>
     </div>
 
-    <div class="city-grid">
-
-      <ion-card
-        class="city-card"
-        button="true"
+    <div class="city-grid" *ngIf="!yukleniyor && !hata">
+      <ion-card class="city-card" button="true"
         *ngFor="let city of filteredCities"
         (click)="openCity(city.id)">
-
         <ion-card-content>
-
           <div class="city-icon">
             <ion-icon name="business-outline"></ion-icon>
           </div>
-
           <div class="city-info">
-            <h3>{{ city.name }}</h3>
-            <p>{{ city.districtCount }} ilçe</p>
+            <h3>{{ city.ad }}</h3>
+            <p>{{ city.ilceSayisi }} ilçe · {{ city.durakSayisi }} durak</p>
           </div>
-
-          <ion-icon
-            name="chevron-forward-outline"
-            class="arrow-icon">
-          </ion-icon>
-
+          <ion-icon name="chevron-forward-outline" class="arrow-icon"></ion-icon>
         </ion-card-content>
-
       </ion-card>
-
     </div>
 
-    <div class="empty-state" *ngIf="filteredCities.length === 0">
+    <div class="empty-state" *ngIf="!yukleniyor && !hata && filteredCities.length === 0">
       <ion-icon name="search-outline"></ion-icon>
       <h3>İl bulunamadı</h3>
       <p>Aradığın il için farklı bir kelime deneyebilirsin.</p>
     </div>
-
   </div>
-
 </ion-content>
