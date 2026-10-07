@@ -9,6 +9,7 @@ builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<TurkiyeApiService>();
 builder.Services.AddScoped<KocaeliGtfsService>();
+builder.Services.AddHostedService<MarmaraStartupSeeder>();
 
 // PostgreSQL
 builder.Services.AddDbContext<MarmaraUlasimDbContext>(options =>
