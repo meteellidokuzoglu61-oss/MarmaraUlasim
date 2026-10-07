@@ -14,6 +14,20 @@ public class VeriController : ControllerBase
         _turkiyeApi = turkiyeApi;
     }
 
+    [HttpPost("marmara-aktar")]
+    public async Task<IActionResult> MarmaraAktar()
+    {
+        var ilceAdet = await _turkiyeApi.IlceleriAktarAsync();
+        var mahalleAdet = await _turkiyeApi.MahalleleriAktarAsync();
+
+        return Ok(new
+        {
+            mesaj = "Marmara ilçe ve mahalle verileri aktarıldı.",
+            ilceAdet,
+            mahalleAdet
+        });
+    }
+
     [HttpPost("ilceleri-aktar")]
     public async Task<IActionResult> IlceleriAktar()
     {
