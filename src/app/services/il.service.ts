@@ -26,6 +26,14 @@ export interface Ilce {
   durakSayisi: number;
 }
 
+export interface IlceDetay {
+  id: number;
+  ad: string;
+  ilId: number;
+  il: string | null;
+  mahalleler: Array<{ id: number; ad: string }>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class IlService {
   private readonly http = inject(HttpClient);
