@@ -9,7 +9,7 @@
     <ion-searchbar
       placeholder="Durak adı veya kodu ara..."
       [(ngModel)]="arama"
-      (ionInput)="duraklariGetir()"
+      (ionInput)="aramaDegisti()"
       debounce="400">
     </ion-searchbar>
 
@@ -39,6 +39,12 @@
         </ion-button>
       </ion-item>
     </ion-list>
+
+    <nav class="sayfalama" *ngIf="!yukleniyor && !hata && toplam > sayfaBoyutu" aria-label="Durak sayfaları">
+      <ion-button fill="outline" [disabled]="sayfa <= 1" (click)="oncekiSayfa()">Önceki</ion-button>
+      <span>{{ sayfa }} / {{ toplamSayfa }}. sayfa</span>
+      <ion-button fill="outline" [disabled]="sayfa >= toplamSayfa" (click)="sonrakiSayfa()">Sonraki</ion-button>
+    </nav>
 
     <div class="bos" *ngIf="!yukleniyor && !hata && duraklar.length === 0">
       <h3>Durak bulunamadı</h3>
