@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Sefer {
   id: number;
@@ -44,54 +45,26 @@ export interface Durak {
   plakaKodu: number | null;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class MarmaraApiService {
-
   private readonly http = inject(HttpClient);
+  private readonly apiUrl = environment.apiUrl;
 
-  private readonly apiUrl = 'http://localhost:5197/api';
-
-  getSeferler(
-    sayfa: number = 1,
-    sayfaBoyutu: number = 20
-  ): Observable<Sefer[]> {
-
-    return this.http.get<Sefer[]>(
-      `${this.apiUrl}/Duraklar/seferler`,
-      {
-        params: {
-          sayfa,
-          sayfaBoyutu
-        }
-      }
-    );
+  getSeferler(sayfa: number = 1, sayfaBoyutu: number = 20): Observable<Sefer[]> {
+    return this.http.get<Sefer[]>(`${this.apiUrl}/Duraklar/seferler`, {
+      params: { sayfa, sayfaBoyutu }
+    });
   }
 
-  getSeferGuzergahi(
-    seferKodu: string
-  ): Observable<SeferGuzergahi> {
-
+  getSeferGuzergahi(seferKodu: string): Observable<SeferGuzergahi> {
     return this.http.get<SeferGuzergahi>(
       `${this.apiUrl}/Duraklar/sefer/${encodeURIComponent(seferKodu)}/guzergah`
     );
   }
 
-  getDuraklar(
-    sayfa: number = 1,
-    sayfaBoyutu: number = 100
-  ): Observable<any> {
-
-    return this.http.get<any>(
-      `${this.apiUrl}/Duraklar`,
-      {
-        params: {
-          sayfa,
-          sayfaBoyutu
-        }
-      }
-    );
+  getDuraklar(sayfa: number = 1, sayfaBoyutu: number = 100): Observable<unknown> {
+    return this.http.get<unknown>(`${this.apiUrl}/Duraklar`, {
+      params: { sayfa, sayfaBoyutu }
+    });
   }
 }
-
