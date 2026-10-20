@@ -28,6 +28,8 @@ export class DuraklarPage implements OnInit {
   arama = '';
   ilceId?: number;
   toplam = 0;
+  sayfa = 1;
+  readonly sayfaBoyutu = 100;
   yukleniyor = true;
   hata = '';
 
@@ -41,6 +43,7 @@ export class DuraklarPage implements OnInit {
 
   ngOnInit(): void {
     this.ilceId = Number(this.route.snapshot.queryParamMap.get('ilceId')) || undefined;
+    this.arama = this.route.snapshot.queryParamMap.get('arama') ?? '';
     this.duraklariGetir();
   }
 
@@ -48,10 +51,11 @@ export class DuraklarPage implements OnInit {
     this.yukleniyor = true;
     this.hata = '';
 
-    this.durakService.getDuraklar(this.arama, this.ilceId).subscribe({
+    this.durakService.getDuraklar(this.arama, this.ilceId, this.sayfa, this.sayfaBoyutu).subscribe({
       next: sonuc => {
         this.duraklar = sonuc.veriler;
         this.toplam = sonuc.toplam;
+        this.sayfa = sonuc.sayfa;
         this.yukleniyor = false;
       },
       error: error => {
@@ -60,6 +64,29 @@ export class DuraklarPage implements OnInit {
         this.yukleniyor = false;
       }
     });
+  }
+
+  aramaDegisti(): void {
+    this.sayfa = 1;
+    this.duraklariGetir();
+  }
+
+  oncekiSayfa(): void {
+    if (this.sayfa > 1) {
+      this.sayfa--;
+      this.duraklariGetir();
+    }
+  }
+
+  sonrakiSayfa(): void {
+    if (this.sayfa * this.sayfaBoyutu < this.toplam) {
+      this.sayfa++;
+      this.duraklariGetir();
+    }
+  }
+
+  get toplamSayfa(): number {
+    return Math.max(1, Math.ceil(this.toplam / this.sayfaBoyutu));
   }
 
   favoriMi(durak: Durak): boolean {
