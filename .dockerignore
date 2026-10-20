@@ -1,0 +1,15 @@
+.git
+.github
+node_modules
+.angular
+www
+dist
+coverage
+**/bin
+**/obj
+**/*.user
+**/*.suo
+.env
+.env.*
+**/appsettings.Local.json
+MarmaraUlasim.API/GTFS/

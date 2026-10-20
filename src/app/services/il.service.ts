@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Il {
   id: number;
@@ -25,10 +26,18 @@ export interface Ilce {
   durakSayisi: number;
 }
 
+export interface IlceDetay {
+  id: number;
+  ad: string;
+  ilId: number;
+  il: string | null;
+  mahalleler: Array<{ id: number; ad: string }>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class IlService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:5197/api';
+  private readonly apiUrl = environment.apiUrl;
 
   getIller(): Observable<Il[]> {
     return this.http.get<Il[]>(`${this.apiUrl}/Iller`);
@@ -40,5 +49,9 @@ export class IlService {
 
   getIlceler(ilId: number): Observable<Ilce[]> {
     return this.http.get<Ilce[]>(`${this.apiUrl}/Ilceler/il/${ilId}`);
+  }
+
+  getIlce(id: number): Observable<IlceDetay> {
+    return this.http.get<IlceDetay>(`${this.apiUrl}/Ilceler/${id}`);
   }
 }

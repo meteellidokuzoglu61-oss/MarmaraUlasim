@@ -1,0 +1,54 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/iller"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ ilce?.ad || 'İlçe Detayı' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <main class="page-container">
+    <div *ngIf="yukleniyor" class="durum" role="status">
+      <ion-spinner name="crescent"></ion-spinner>
+      <p>İlçe ve mahalle bilgileri yükleniyor...</p>
+    </div>
+
+    <ion-text color="danger" *ngIf="hata">
+      <p>{{ hata }}</p>
+    </ion-text>
+
+    <ng-container *ngIf="ilce && !yukleniyor">
+      <section class="hero">
+        <span>{{ ilce.il || 'Marmara Bölgesi' }}</span>
+        <h1>{{ ilce.ad }}</h1>
+        <p>{{ ilce.mahalleler.length }} mahalle</p>
+      </section>
+
+      <section class="section-heading">
+        <div>
+          <h2>Mahalleler</h2>
+          <p>İlçedeki mahalleleri görüntüle.</p>
+        </div>
+        <span class="count">{{ ilce.mahalleler.length }}</span>
+      </section>
+
+      <ion-list *ngIf="ilce.mahalleler.length">
+        <ion-item *ngFor="let mahalle of ilce.mahalleler">
+          <ion-label>
+            <h3>{{ mahalle.ad }}</h3>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+
+      <div class="empty-state" *ngIf="!ilce.mahalleler.length">
+        <h3>Mahalle verisi henüz yok</h3>
+        <p>Veri aktarımını çalıştırdıktan sonra tekrar kontrol et.</p>
+      </div>
+
+      <button class="stops-button" type="button" (click)="duraklariAc()">
+        Bu ilçedeki durakları göster
+      </button>
+    </ng-container>
+  </main>
+</ion-content>

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MarmaraUlasim.API.Services;
 
@@ -5,6 +6,7 @@ namespace MarmaraUlasim.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Policy = "DataImport")]
 public class VeriController : ControllerBase
 {
     private readonly TurkiyeApiService _turkiyeApi;

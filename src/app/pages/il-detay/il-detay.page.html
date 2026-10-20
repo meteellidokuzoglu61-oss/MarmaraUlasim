@@ -34,7 +34,7 @@
 
       <ion-list>
         <ion-item button *ngFor="let ilce of il.ilceler"
-          (click)="duraklariAc(ilce.id)">
+          (click)="ilceyiAc(ilce.id)">
           <ion-label>
             <h2>{{ ilce.ad }}</h2>
             <p>{{ ilce.mahalleSayisi }} mahalle · {{ ilce.durakSayisi }} durak</p>

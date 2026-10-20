@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Durak {
   id: number;
@@ -27,7 +28,7 @@ export interface DurakSonuc {
 
 @Injectable({ providedIn: 'root' })
 export class DurakService {
-  private readonly apiUrl = 'http://localhost:5197/api/duraklar';
+  private readonly apiUrl = `${environment.apiUrl}/Duraklar`;
 
   constructor(private readonly http: HttpClient) {}
 

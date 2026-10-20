@@ -15,19 +15,15 @@
 
   <div class="main-container">
     <section class="search-card">
-      <h2>Nereye gitmek istiyorsun?</h2>
+      <h2>Hangi durağı arıyorsun?</h2>
 
       <div class="input-group">
-        <label for="from">Nereden?</label>
-        <input id="from" type="text" placeholder="Başlangıç noktası" />
+        <label for="to">Durak adı veya kodu</label>
+        <input id="to" name="varisDuragi" type="search" [(ngModel)]="varisDuragi"
+          placeholder="Örn. İzmit Merkez" (keyup.enter)="durakAra()" />
       </div>
 
-      <div class="input-group">
-        <label for="to">Nereye?</label>
-        <input id="to" type="text" placeholder="Varış noktası" />
-      </div>
-
-      <button class="search-button" routerLink="/harita">Haritada Gör</button>
+      <button class="search-button" type="button" (click)="durakAra()">Duraklarda Ara</button>
     </section>
 
     <section class="transport-section">

@@ -57,3 +57,17 @@ ion-item p {
 .durum ion-spinner {
   font-size: 30px;
 }
+
+.sayfalama {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 0;
+}
+
+.sayfalama span {
+  color: #64748b;
+  font-size: 13px;
+  white-space: nowrap;
+}
