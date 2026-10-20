@@ -1,9 +1,0 @@
-C:\Users\hatic\Desktop\Web Projeleri\MarmaraUlasim\MarmaraUlasim.API\obj\Debug\net10.0\MarmaraUlasim.API.csproj.AssemblyReference.cache
-C:\Users\hatic\Desktop\Web Projeleri\MarmaraUlasim\MarmaraUlasim.API\obj\Debug\net10.0\rpswa.dswa.cache.json
-C:\Users\hatic\Desktop\Web Projeleri\MarmaraUlasim\MarmaraUlasim.API\obj\Debug\net10.0\MarmaraUlasim.API.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\hatic\Desktop\Web Projeleri\MarmaraUlasim\MarmaraUlasim.API\obj\Debug\net10.0\MarmaraUlasim.API.AssemblyInfoInputs.cache
-C:\Users\hatic\Desktop\Web Projeleri\MarmaraUlasim\MarmaraUlasim.API\obj\Debug\net10.0\MarmaraUlasim.API.AssemblyInfo.cs
-C:\Users\hatic\Desktop\Web Projeleri\MarmaraUlasim\MarmaraUlasim.API\obj\Debug\net10.0\MarmaraUlasim.API.csproj.CoreCompileInputs.cache
-C:\Users\hatic\Desktop\Web Projeleri\MarmaraUlasim\MarmaraUlasim.API\obj\Debug\net10.0\MarmaraUlasim.API.MvcApplicationPartsAssemblyInfo.cs
-C:\Users\hatic\Desktop\Web Projeleri\MarmaraUlasim\MarmaraUlasim.API\obj\Debug\net10.0\MarmaraUlasim.API.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\hatic\Desktop\Web Projeleri\MarmaraUlasim\MarmaraUlasim.API\obj\Debug\net10.0\MarmaraUlasim.API.sourcelink.json
