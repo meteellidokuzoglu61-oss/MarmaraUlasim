@@ -11,12 +11,12 @@ import { IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/angular';
   imports: [IonHeader, IonToolbar, IonTitle, IonContent, RouterLink, FormsModule],
 })
 export class HomePage {
-  varisDurağı = '';
+  varisDuragi = '';
 
   constructor(private readonly router: Router) {}
 
   durakAra(): void {
-    const arama = this.varisDurağı.trim();
+    const arama = this.varisDuragi.trim();
     if (!arama) {
       this.router.navigate(['/duraklar']);
       return;
