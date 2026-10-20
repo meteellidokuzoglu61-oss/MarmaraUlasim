@@ -51,7 +51,7 @@ export class IlDetayPage implements OnInit {
     });
   }
 
-  duraklariAc(ilceId: number): void {
-    this.router.navigate(['/duraklar'], { queryParams: { ilceId } });
+  ilceyiAc(ilceId: number): void {
+    this.router.navigate(['/ilce-detay', ilceId]);
   }
 }
