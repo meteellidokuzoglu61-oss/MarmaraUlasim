@@ -23,6 +23,11 @@ export const routes: Routes = [
       import('./pages/il-detay/il-detay.page').then((m) => m.IlDetayPage),
   },
   {
+    path: 'ilce-detay/:id',
+    loadComponent: () =>
+      import('./pages/ilce-detay/ilce-detay.page').then((m) => m.IlceDetayPage),
+  },
+  {
     path: 'hatlar',
     loadComponent: () =>
       import('./pages/hatlar/hatlar.page').then((m) => m.HatlarPage),
