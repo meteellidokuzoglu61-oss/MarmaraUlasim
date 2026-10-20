@@ -103,3 +103,20 @@ Veri aktarım uç noktaları POST /api/Veri/* yalnızca geliştirme ortamında v
 ## Yayın notu
 
 GitHub deposunda uygulamanın kaynak kodu master dalındadır; main dalı yalnızca başlangıç README dosyasını içeriyordu. Yayın veya otomatik dağıtım yapılandırırken doğru kaynak dalını seç. Bu dal ayrımı yayın öncesinde birleştirilmeli veya deponun varsayılan dalı kaynak kodu içeren dala alınmalıdır.
+
+## Docker ile yayına hazırlama
+
+Depo kökünde:
+
+    docker build -t marmara-ulasim .
+    docker run --rm -p 8080:8080 \
+      -e ASPNETCORE_ENVIRONMENT=Production \
+      -e ConnectionStrings__Default="Host=HOST;Port=5432;Database=DB_ADI;Username=DB_KULLANICISI;Password=YENI_GIZLI_PAROLA;SSL Mode=Require" \
+      -e Admin__ApiKey="UZUN_RASTGELE_YONETICI_ANAHTARI" \
+      marmara-ulasim
+
+Yer tutucuları gerçek üretim veritabanı bilgileriyle değiştir. Bu komutta gerçek sırları kaynak dosyaya veya Git'e kaydetme. Barındırma sağlayıcısında aynı değerleri platformun Environment Variables / Secrets alanına ekle.
+
+Uygulama 8080 portunu dinler. Yayın platformunda dış HTTPS bağlantısını platformun TLS/proxy katmanı yönetmelidir. Üretim veritabanı internetten erişilebilir olacaksa yalnızca sağlayıcının izin verdiği ağlardan erişim aç; güçlü parola ve TLS kullan.
+
+> Docker imajı derlenebilir olsa bile gerçek yayından önce sağlayıcı ortamında PostgreSQL bağlantısını, /health kontrolünü, ilçe/mahalle veri aktarımını ve Kocaeli GTFS içe aktarımını doğrula.
