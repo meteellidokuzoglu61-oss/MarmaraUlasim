@@ -40,3 +40,12 @@ jobs:
         run: dotnet restore MarmaraUlasim.API/MarmaraUlasim.API.csproj
       - name: Build API
         run: dotnet build MarmaraUlasim.API/MarmaraUlasim.API.csproj --configuration Release --no-restore
+
+  container-build:
+    name: Production Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Build image
+        run: docker build --tag marmara-ulasim:ci .
