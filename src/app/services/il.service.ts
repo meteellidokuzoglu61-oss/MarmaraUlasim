@@ -50,4 +50,8 @@ export class IlService {
   getIlceler(ilId: number): Observable<Ilce[]> {
     return this.http.get<Ilce[]>(`${this.apiUrl}/Ilceler/il/${ilId}`);
   }
+
+  getIlce(id: number): Observable<IlceDetay> {
+    return this.http.get<IlceDetay>(`${this.apiUrl}/Ilceler/${id}`);
+  }
 }
