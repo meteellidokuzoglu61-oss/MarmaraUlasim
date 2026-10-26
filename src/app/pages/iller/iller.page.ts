@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonIcon,
   IonSearchbar, IonBadge, IonCard, IonCardContent,
-  IonSpinner, IonText
+  IonSpinner, IonText, IonButton
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { mapOutline, businessOutline, chevronForwardOutline, searchOutline } from 'ionicons/icons';
@@ -21,7 +21,7 @@ import { Il, IlService } from '../../services/il.service';
   imports: [
     CommonModule, FormsModule, IonHeader, IonToolbar, IonTitle,
     IonContent, IonIcon, IonSearchbar, IonBadge, IonCard,
-    IonCardContent, IonSpinner, IonText
+    IonCardContent, IonSpinner, IonText, IonButton
   ]
 })
 export class IllerPage implements OnInit {
