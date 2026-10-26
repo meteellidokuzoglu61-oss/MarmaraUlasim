@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, master, release/publish-readiness]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, release/publish-readiness]
 
 permissions:
   contents: read
@@ -29,6 +29,8 @@ jobs:
         run: npm ci
       - name: Build frontend
         run: npm run build
+      - name: Run frontend unit tests
+        run: npm test -- --configuration=ci
 
   api-build:
     name: ASP.NET Core build

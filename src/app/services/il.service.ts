@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, timeout } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface Il {
@@ -40,11 +40,14 @@ export class IlService {
   private readonly apiUrl = environment.apiUrl;
 
   getIller(): Observable<Il[]> {
-    return this.http.get<Il[]>(`${this.apiUrl}/Iller`);
+    // Yanıt gelmezse sayfanın sonsuza kadar yükleniyor durumunda kalmasını önle.
+    return this.http.get<Il[]>(`${this.apiUrl}/Iller`).pipe(
+      timeout({ first: 15000 })
+    );
   }
 
   getIl(id: number): Observable<IlDetay> {
-    return this.http.get<IlDetay>(`${this.apiUrl}/Iller/${id}`);
+    return this.http.get<IlDetay>(`${this.apiUrl}/Iller/${id}`).pipe(timeout({ first: 15000 }));
   }
 
   getIlceler(ilId: number): Observable<Ilce[]> {
@@ -52,6 +55,6 @@ export class IlService {
   }
 
   getIlce(id: number): Observable<IlceDetay> {
-    return this.http.get<IlceDetay>(`${this.apiUrl}/Ilceler/${id}`);
+    return this.http.get<IlceDetay>(`${this.apiUrl}/Ilceler/${id}`).pipe(timeout({ first: 15000 }));
   }
 }

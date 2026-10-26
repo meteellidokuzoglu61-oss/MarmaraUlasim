@@ -30,6 +30,9 @@
     <ion-text color="danger" *ngIf="hata">
       <p>{{ hata }}</p>
     </ion-text>
+    <div class="durum" *ngIf="hata">
+      <ion-button type="button" (click)="illeriGetir()">Tekrar dene</ion-button>
+    </div>
 
     <div class="section-heading" *ngIf="!yukleniyor && !hata">
       <div>

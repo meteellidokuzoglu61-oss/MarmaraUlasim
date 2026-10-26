@@ -38,12 +38,26 @@ public class KocaeliStartupImporter : BackgroundService
                 return;
             }
 
-            var mevcutHat = await db.Hatlar
+            // Yalnızca hatların varlığı aktarımın tamamlandığını göstermez:
+            // önceki bir başlangıçta aktarım yarıda kalmış olabilir.
+            // Tüm ana veri kümeleri mevcutsa tekrar indirmeyi atla; aksi durumda
+            // içe aktarıcı eksik kayıtları tamamlamak için yeniden çalışsın.
+            var hatVar = await db.Hatlar
+                .AnyAsync(x => x.Kaynak == "KentKart-Kocaeli", stoppingToken);
+            var durakVar = await db.Duraklar
+                .AnyAsync(x => x.Kaynak == "KentKart-Kocaeli", stoppingToken);
+            var seferVar = await db.Seferler
+                .AnyAsync(x => x.Kaynak == "KentKart-Kocaeli", stoppingToken);
+            var seferDurakVar = await db.SeferDuraklar
+                .AnyAsync(x => x.Aktif && db.Seferler.Any(s =>
+                    s.Kaynak == "KentKart-Kocaeli" && s.SeferKodu == x.SeferKodu),
+                    stoppingToken);
+            var guzergahVar = await db.GuzergahNoktalari
                 .AnyAsync(x => x.Kaynak == "KentKart-Kocaeli", stoppingToken);
 
-            if (mevcutHat)
+            if (hatVar && durakVar && seferVar && seferDurakVar && guzergahVar)
             {
-                _logger.LogInformation("Kocaeli GTFS verileri zaten mevcut.");
+                _logger.LogInformation("Kocaeli GTFS ana veri kümeleri zaten mevcut.");
                 return;
             }
 

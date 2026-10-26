@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonIcon,
   IonSearchbar, IonBadge, IonCard, IonCardContent,
-  IonSpinner, IonText
+  IonSpinner, IonText, IonButton
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { mapOutline, businessOutline, chevronForwardOutline, searchOutline } from 'ionicons/icons';
@@ -19,7 +20,7 @@ import { Il, IlService } from '../../services/il.service';
   imports: [
     CommonModule, FormsModule, IonHeader, IonToolbar, IonTitle,
     IonContent, IonIcon, IonSearchbar, IonBadge, IonCard,
-    IonCardContent, IonSpinner, IonText
+    IonCardContent, IonSpinner, IonText, IonButton
   ]
 })
 export class IllerPage implements OnInit {
@@ -55,9 +56,15 @@ export class IllerPage implements OnInit {
         this.filteredCities = iller;
         this.yukleniyor = false;
       },
-      error: error => {
+      error: (error: unknown) => {
         console.error('İller alınamadı:', error);
-        this.hata = 'İller yüklenirken bir hata oluştu.';
+        if (error instanceof HttpErrorResponse && error.status === 0) {
+          this.hata = 'API sunucusuna ulaşılamadı. API çalışıyor mu ve adresi doğru mu kontrol edin.';
+        } else if (error instanceof HttpErrorResponse && error.status > 0) {
+          this.hata = `İller alınamadı (HTTP ${error.status}). API günlüklerini kontrol edin.`;
+        } else {
+          this.hata = 'İstek zaman aşımına uğradı. API yanıt vermiyor olabilir.';
+        }
         this.yukleniyor = false;
       }
     });
