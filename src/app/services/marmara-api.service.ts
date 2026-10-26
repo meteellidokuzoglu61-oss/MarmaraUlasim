@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Sefer {
   id: number;
@@ -51,7 +52,7 @@ export class MarmaraApiService {
 
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl = 'http://localhost:5197/api';
+  private readonly apiUrl = environment.apiUrl;
 
   getSeferler(
     sayfa: number = 1,
