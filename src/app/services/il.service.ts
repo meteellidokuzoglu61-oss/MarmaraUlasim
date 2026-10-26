@@ -47,7 +47,7 @@ export class IlService {
   }
 
   getIl(id: number): Observable<IlDetay> {
-    return this.http.get<IlDetay>(`${this.apiUrl}/Iller/${id}`);
+    return this.http.get<IlDetay>(`${this.apiUrl}/Iller/${id}`).pipe(timeout({ first: 15000 }));
   }
 
   getIlceler(ilId: number): Observable<Ilce[]> {
@@ -55,6 +55,6 @@ export class IlService {
   }
 
   getIlce(id: number): Observable<IlceDetay> {
-    return this.http.get<IlceDetay>(`${this.apiUrl}/Ilceler/${id}`);
+    return this.http.get<IlceDetay>(`${this.apiUrl}/Ilceler/${id}`).pipe(timeout({ first: 15000 }));
   }
 }
