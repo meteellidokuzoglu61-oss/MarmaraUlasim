@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, master, release/publish-readiness]
   pull_request:
-    branches: [main, master]
+    branches: [main, master, release/publish-readiness]
 
 permissions:
   contents: read
