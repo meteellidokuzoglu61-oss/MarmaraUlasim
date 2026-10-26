@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -55,9 +56,15 @@ export class IllerPage implements OnInit {
         this.filteredCities = iller;
         this.yukleniyor = false;
       },
-      error: error => {
+      error: (error: unknown) => {
         console.error('İller alınamadı:', error);
-        this.hata = 'İller yüklenirken bir hata oluştu.';
+        if (error instanceof HttpErrorResponse && error.status === 0) {
+          this.hata = 'API sunucusuna ulaşılamadı. API çalışıyor mu ve adresi doğru mu kontrol edin.';
+        } else if (error instanceof HttpErrorResponse && error.status > 0) {
+          this.hata = `İller alınamadı (HTTP ${error.status}). API günlüklerini kontrol edin.`;
+        } else {
+          this.hata = 'İstek zaman aşımına uğradı. API yanıt vermiyor olabilir.';
+        }
         this.yukleniyor = false;
       }
     });
