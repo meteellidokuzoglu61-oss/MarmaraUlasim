@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using MarmaraUlasim.API.Services;
 
 namespace MarmaraUlasim.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Policy = "DataImport")]
 public class GtfsController : ControllerBase
 {
     private readonly KocaeliGtfsService _gtfs;
