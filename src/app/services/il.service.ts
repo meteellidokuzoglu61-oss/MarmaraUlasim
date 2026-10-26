@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Il {
   id: number;
@@ -28,7 +29,7 @@ export interface Ilce {
 @Injectable({ providedIn: 'root' })
 export class IlService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:5197/api';
+  private readonly apiUrl = environment.apiUrl;
 
   getIller(): Observable<Il[]> {
     return this.http.get<Il[]>(`${this.apiUrl}/Iller`);
