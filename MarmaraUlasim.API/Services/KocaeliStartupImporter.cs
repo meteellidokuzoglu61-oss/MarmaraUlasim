@@ -49,7 +49,9 @@ public class KocaeliStartupImporter : BackgroundService
             var seferVar = await db.Seferler
                 .AnyAsync(x => x.Kaynak == "KentKart-Kocaeli", stoppingToken);
             var seferDurakVar = await db.SeferDuraklar
-                .AnyAsync(x => x.Aktif, stoppingToken);
+                .AnyAsync(x => x.Aktif && db.Seferler.Any(s =>
+                    s.Kaynak == "KentKart-Kocaeli" && s.SeferKodu == x.SeferKodu),
+                    stoppingToken);
             var guzergahVar = await db.GuzergahNoktalari
                 .AnyAsync(x => x.Kaynak == "KentKart-Kocaeli", stoppingToken);
 
